@@ -67,7 +67,7 @@ public class SoloShoot {
 
 
     // This updates in teleop
-    public void update(Gamepad gamepad){
+    public void update1(Gamepad gamepad){
         // Servos
         if (gamepad.left_bumper){
             ascension.setPower(1);

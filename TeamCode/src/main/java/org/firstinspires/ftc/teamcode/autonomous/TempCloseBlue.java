@@ -52,7 +52,7 @@ public class TempCloseBlue extends OpMode{
     // POSITIONS
 
     private final Pose startPose = new Pose(28, 131, Math.toRadians(144)); // STARTING POSITION was 23, 124 , 144
-    private final Pose preScorePose = new Pose(60, 104, Math.toRadians(144)); // PRE-LOAD SCORING POSITION
+    private final Pose preScorePose = new Pose(60, 104, Math.toRadians(146)); // PRE-LOAD SCORING POSITION
     private final Pose row1Line = new Pose(44.5, 84, Math.toRadians(0)); // Position
     private final Pose row1Line1CP = new Pose(91,84.5); // CONTROL POINT
 

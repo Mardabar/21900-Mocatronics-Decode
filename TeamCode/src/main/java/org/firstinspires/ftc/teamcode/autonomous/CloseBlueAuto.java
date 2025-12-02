@@ -49,7 +49,7 @@ public class CloseBlueAuto extends OpMode{
     // POSITIONS
 
     private final Pose startPose = new Pose(21, 122.5, Math.toRadians(144)); // STARTING POSITION
-    private final Pose preScorePose = new Pose(60, 91, Math.toRadians(144)); // PRE-LOAD SCORING POSITION
+    private final Pose preScorePose = new Pose(60, 91, Math.toRadians(146)); // PRE-LOAD SCORING POSITION
     private final Pose scanTagPose = new Pose(60, 91, Math.toRadians(90)); // SCANNING APRIL TAG POSITION
     private final Pose parkPose = new Pose(39, 33, Math.toRadians(90)); // PARKING POSITION
 
