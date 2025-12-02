@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
+import org.firstinspires.ftc.teamcode.subsystems.ShootSystem;
+
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
@@ -11,6 +13,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
+
+import java.util.HashMap;
 
 @TeleOp(name = "StraferMain")
 public class StraferMain extends LinearOpMode{
@@ -35,6 +39,9 @@ public class StraferMain extends LinearOpMode{
     private Limelight3A cam;
     private LLResult camPic;
 
+    // HASHMAPS
+
+    private HashMap<Integer, Double> robSpeeds;
 
     // SPEED AND POSITIONS
 
@@ -61,7 +68,9 @@ public class StraferMain extends LinearOpMode{
 
     // SHOOTING VARS
 
-    private final double OVERSHOOT_VEL_MULT = 1.675;
+    private ShootSystem shooter;
+
+    private final double OVERSHOOT_VEL_MULT = 1.68; // 1.675
     private final double OVERSHOOT_ANG_MULT = 1;
     private final double ANGLE_CONST = 2.08833333;
     private final int ELBOW_GEAR_RATIO = 28;
@@ -140,7 +149,13 @@ public class StraferMain extends LinearOpMode{
         cam = hardwareMap.get(Limelight3A.class, "limelight");
         cam.pipelineSwitch(0);
 
+        // Hashmap Init
+
+        robSpeeds = new HashMap<>();
+
         // Other Vars
+
+        shooter = new ShootSystem("teleop");
 
         speed = mainSpeed;
         shootReady = false;
@@ -291,7 +306,7 @@ public class StraferMain extends LinearOpMode{
 
                         // MAIN DRIVER CONTROLS
 
-                        if (!shootReady) {
+                        if (!shooter.shootReady) {
                             // This block allows the movement to snap in one direction if the driver seems to want to go in just one direction
                             if (Math.abs(gamepad1.left_stick_y) < snapPos && Math.abs(gamepad1.left_stick_x) > snapPos) {
                                 lStickPosX = gamepad1.left_stick_x;
@@ -328,10 +343,10 @@ public class StraferMain extends LinearOpMode{
                                 runBelt(beltSpeed);
                             else if (gamepad1.b)
                                 runBelt(-beltSpeed);
-                            else if (gamepad1.a && !shootPrep) {
+                            else if (gamepad1.a && !shooter.shootPrep) {
                                 camPic = cam.getLatestResult();
                                 if (camPic.isValid())
-                                    initShooting(camPic);
+                                    shooter.initShooting(camPic);
                             } else
                                 runBelt(0);
 
@@ -352,10 +367,17 @@ public class StraferMain extends LinearOpMode{
                         }
 
                         // Shoots the ball when conditions are met
-                        if (gamepad1.a && shootReady)
-                            shoot();
-                        else if (shootReady)
-                            resetBack();
+                        if (gamepad1.a && shooter.shootReady) {
+                            shooter.shoot();
+
+                            telemetry.addData("Velocity", shooter.getShootVel());
+                            telemetry.addData("Encoder Angle", shooter.getAngleEnc());
+                            telemetry.update();
+
+                            angleAdjuster();
+                        }
+                        else if (shooter.shootReady)
+                            shooter.resetBack();
 
                         break;
 
@@ -427,11 +449,40 @@ public class StraferMain extends LinearOpMode{
 
     // ACCESSORY METHODS
 
+    private void angleAdjuster(){
+        // This section uses PID to control the angle the robot is facing towards the april tag
+        if (gamepad1.left_bumper){
+            lb.setPower((turnMult * gamepad1.right_stick_x * -speed) + (speed * gamepad1.left_stick_x) + (speed * gamepad1.left_stick_y));
+            rb.setPower((turnMult * gamepad1.right_stick_x * speed) + (-speed * gamepad1.left_stick_x) + (speed * gamepad1.left_stick_y));
+
+            lf.setPower((turnMult * gamepad1.right_stick_x * -speed) + (-speed * lStickPosX) + (speed * lStickPosY));
+            rf.setPower((turnMult * gamepad1.right_stick_x * speed) + (speed * lStickPosX) + (speed * lStickPosY));
+        }
+        else {
+            camPic = cam.getLatestResult();
+            for (LLResultTypes.FiducialResult res : camPic.getFiducialResults()) {
+                int id = res.getFiducialId();
+                if (id == 20 || id == 24) {
+                    double error = res.getTargetXDegrees();
+                    iSum += error;
+                    double derError = lastError - error;
+
+                    lb.setPower(-((error * p) + (iSum * i) + (derError * d)));
+                    rb.setPower((error * p) + (iSum * i) + (derError * d));
+                    lf.setPower(-((error * p) + (iSum * i) + (derError * d)));
+                    rf.setPower((error * p) + (iSum * i) + (derError * d));
+
+                    lastError = error;
+                }
+            }
+        }
+    }
+
     private void initShooting(LLResult pic){
         for (LLResultTypes.FiducialResult res : pic.getFiducialResults()) {
             int id = res.getFiducialId();
             if (id == 20 || id == 24) {
-                double angle = 25.2 + res.getTargetYDegrees();
+                double angle = 18 + res.getTargetYDegrees(); // 25.2
                 double tagDist = (0.646 / Math.tan(Math.toRadians(angle)));
 
                 setShootPos(tagDist);
@@ -450,7 +501,11 @@ public class StraferMain extends LinearOpMode{
 
     private void shoot(){
         shootRot = velToRot(shootVel);
+
+
         setElbowTarget(angleToEncoder(shootAngle));
+        ls.setVelocity(shootRot);
+        rs.setVelocity(shootRot);
 
         telemetry.addData("Velocity", shootVel);
         telemetry.addData("Encoder Angle", shootAngle);
@@ -487,9 +542,6 @@ public class StraferMain extends LinearOpMode{
             flysSpeedy = true;
         if (flysSpeedy)
             feedLauncher();
-
-        ls.setVelocity(shootRot);
-        rs.setVelocity(shootRot);
     }
 
     private void resetBack(){
@@ -574,13 +626,5 @@ public class StraferMain extends LinearOpMode{
             }
             feedTimer.reset();
         }
-    }
-
-    public void updatePos() {
-
-        telemetry.addData("Motor velo: ", ls.getVelocity());
-        telemetry.update();
-
-
     }
 }
