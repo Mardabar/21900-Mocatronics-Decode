@@ -41,7 +41,7 @@ public class ShootSystem {
     // FEEDING VARS
 
     private double openPos = 0.53;
-    private double feedPos = 0.2; // 0.02
+    private double feedPos = 0.35; // 0.02
     private ElapsedTime blockTimer;
     private ElapsedTime feedTimer;
     private double feedDur = 750;
