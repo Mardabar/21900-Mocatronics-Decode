@@ -45,7 +45,7 @@ public class StraferMain extends LinearOpMode{
 
     // SPEED AND POSITIONS
 
-    private double mainSpeed = 0.5;
+    private double mainSpeed = 1;
     private double speed;
     private double turnMult = 1.6;
     private double slowMult = 0.4;
@@ -155,7 +155,7 @@ public class StraferMain extends LinearOpMode{
 
         // Other Vars
 
-        shooter = new ShootSystem("teleop");
+        shooter = new ShootSystem(hardwareMap, "teleop");
 
         speed = mainSpeed;
         shootReady = false;
@@ -228,20 +228,20 @@ public class StraferMain extends LinearOpMode{
 
                         // MAIN DRIVER CONTROLS
 
-                        if (!shootReady) {
+                        if (!shooter.shootReady) {
                             // This block allows the movement to snap in one direction if the driver seems to want to go in just one direction
                             if (Math.abs(gamepad1.left_stick_y) < snapPos && Math.abs(gamepad1.left_stick_x) > snapPos) {
-                                lStickPosX = gamepad1.left_stick_x;
+                                lStickPosX = Math.pow(gamepad1.left_stick_x, 3);
                                 lStickPosY = 0;
                             } else if (Math.abs(gamepad1.left_stick_y) > snapPos && Math.abs(gamepad1.left_stick_x) < snapPos) {
-                                lStickPosY = gamepad1.left_stick_y;
+                                lStickPosY = Math.pow(gamepad1.left_stick_y, 3);
                                 lStickPosX = 0;
                             } else if (Math.abs(gamepad1.left_stick_y) < snapPos * 3 && Math.abs(gamepad1.left_stick_x) < snapPos * 3) {
                                 lStickPosY = 0;
                                 lStickPosX = 0;
                             } else {
-                                lStickPosY = gamepad1.left_stick_y;
-                                lStickPosX = gamepad1.left_stick_x;
+                                lStickPosY = Math.pow(gamepad1.left_stick_y, 3);
+                                lStickPosX = Math.pow(gamepad1.left_stick_x, 3);
                             }
 
                             // The main strafer movement of the robot, changed for the first time in years
@@ -264,10 +264,10 @@ public class StraferMain extends LinearOpMode{
                                 runBelt(beltSpeed);
                             else if (gamepad2.left_bumper)
                                 runBelt(-beltSpeed);
-                            else if (gamepad2.a && !shootPrep) {
+                            else if (gamepad2.a && !shooter.shootPrep) {
                                 camPic = cam.getLatestResult();
                                 if (camPic.isValid())
-                                    initShooting(camPic);
+                                    shooter.initShooting(camPic);
                             } else
                                 runBelt(0);
 
@@ -288,11 +288,17 @@ public class StraferMain extends LinearOpMode{
                         }
 
                         // Shoots the ball when conditions are met
-                        if (gamepad2.a && shootReady){
-                            shoot();
+                        if (gamepad2.a && shooter.shootReady){
+                            shooter.shoot();
+
+                            telemetry.addData("Velocity", shooter.getShootVel());
+                            telemetry.addData("Encoder Angle", shooter.getAngleEnc());
+                            telemetry.update();
+
+                            angleAdjuster();
                         }
-                        else if (shootReady){
-                            resetBack();
+                        else if (shooter.shootReady){
+                            shooter.resetBack();
                         }
 
                         break;
@@ -309,17 +315,17 @@ public class StraferMain extends LinearOpMode{
                         if (!shooter.shootReady) {
                             // This block allows the movement to snap in one direction if the driver seems to want to go in just one direction
                             if (Math.abs(gamepad1.left_stick_y) < snapPos && Math.abs(gamepad1.left_stick_x) > snapPos) {
-                                lStickPosX = gamepad1.left_stick_x;
+                                lStickPosX = Math.pow(gamepad1.left_stick_x, 3);
                                 lStickPosY = 0;
                             } else if (Math.abs(gamepad1.left_stick_y) > snapPos && Math.abs(gamepad1.left_stick_x) < snapPos) {
-                                lStickPosY = gamepad1.left_stick_y;
+                                lStickPosY = Math.pow(gamepad1.left_stick_y, 3);
                                 lStickPosX = 0;
                             } else if (Math.abs(gamepad1.left_stick_y) < snapPos * 3 && Math.abs(gamepad1.left_stick_x) < snapPos * 3) {
                                 lStickPosY = 0;
                                 lStickPosX = 0;
                             } else {
-                                lStickPosY = gamepad1.left_stick_y;
-                                lStickPosX = gamepad1.left_stick_x;
+                                lStickPosY = Math.pow(gamepad1.left_stick_y, 3);
+                                lStickPosX = Math.pow(gamepad1.left_stick_x, 3);
                             }
 
                             // The main strafer movement of the robot, changed for the first time in years

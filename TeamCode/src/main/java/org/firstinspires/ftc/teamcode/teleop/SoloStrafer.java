@@ -11,8 +11,8 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.subsystems.Drive;
-import org.firstinspires.ftc.teamcode.subsystems.Intake;
+//import org.firstinspires.ftc.teamcode.subsystems.Drive;
+//import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.SoloShoot;
 
 
@@ -21,9 +21,9 @@ import org.firstinspires.ftc.teamcode.subsystems.SoloShoot;
 public class SoloStrafer extends LinearOpMode {
 
     // Subsystem stuff
-    private Intake intake;
+    //private Intake intake;
     private SoloShoot soloShoot;
-    private Drive drive;
+    //private Drive drive;
 
 
     @Override
@@ -31,8 +31,8 @@ public class SoloStrafer extends LinearOpMode {
 
         // Subsystem stuff
         soloShoot = new SoloShoot(hardwareMap);
-        intake = new Intake(hardwareMap);
-        drive = new Drive(hardwareMap);
+        //intake = new Intake(hardwareMap);
+        //drive = new Drive(hardwareMap);
 
 
 
@@ -41,8 +41,8 @@ public class SoloStrafer extends LinearOpMode {
 
         while (opModeIsActive()) {
             soloShoot.update1(gamepad1);
-            intake.update1(gamepad1);
-            drive.update1(gamepad1);
+            //intake.update1(gamepad1);
+            //drive.update1(gamepad1);
         }
     }
 }

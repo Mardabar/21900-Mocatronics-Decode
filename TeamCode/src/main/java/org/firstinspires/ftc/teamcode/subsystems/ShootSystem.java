@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
-import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.hardwareMap;
-
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -9,10 +7,11 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 
 public class ShootSystem {
 
-    private final String mode;
+    private String mode;
 
     private DcMotorEx ls;
     private DcMotorEx rs;
@@ -48,12 +47,13 @@ public class ShootSystem {
     private double feedDur = 650;
     private double retDur = 300;
     private double beltDur = 450;
-    private int feeding = 0;
+    private int feeding = 2;
+    private int fcount;
     private boolean flysSpeedy;
 
     // INIT
 
-    public void init(){
+    public ShootSystem(HardwareMap hardwareMap, String mode){
         ls = hardwareMap.get(DcMotorEx.class, "ls");
         rs = hardwareMap.get(DcMotorEx.class, "rs");
         belt = hardwareMap.get(DcMotorEx.class, "belt");
@@ -73,6 +73,8 @@ public class ShootSystem {
 
         blockTimer = new ElapsedTime();
         feedTimer = new ElapsedTime();
+
+        this.mode = mode;
     }
 
     // MAIN METHODS
@@ -81,20 +83,16 @@ public class ShootSystem {
         for (LLResultTypes.FiducialResult res : pic.getFiducialResults()) {
             int id = res.getFiducialId();
             if (id == 20 || id == 24) {
-                double angle = 18 + res.getTargetYDegrees(); // 25.2
+                double angle = 25.2 + res.getTargetYDegrees(); // 25.2
                 double tagDist = (0.646 / Math.tan(Math.toRadians(angle)));
 
                 setShootPos(tagDist);
-                feeding = 0;
-                blocker.setPosition(1);
+                feeding = 2;
+                blocker.setPosition(0);
                 blockTimer.reset();
 
                 ls.setMotorEnable();
                 rs.setMotorEnable();
-
-                if (mode.equals("autonomous")){
-
-                }
 
                 shootPrep = true;
             }
@@ -117,6 +115,7 @@ public class ShootSystem {
 
     public void resetBack(){
         feeding = 1;
+        fcount = 0;
         blocker.setPosition(1);
         ascension.setPower(0);
         runBelt(0);
@@ -177,6 +176,7 @@ public class ShootSystem {
                     feeding = 0;
                 else
                     feeding++;
+                fcount++;
             }
             feedTimer.reset();
         }
@@ -226,14 +226,5 @@ public class ShootSystem {
     // This function translates an angle in degrees to an encoder value on 223 RPM motors
     public double angleToEncoder(double angle){
         return angle * ANGLE_CONST * ELBOW_GEAR_RATIO;
-    }
-
-    public ShootSystem(String mode){
-        if (mode.equals("teleop"))
-            this.mode = mode;
-        else if (mode.equals("autonomous"))
-            this.mode = mode;
-        else
-            this.mode = "invalid mode input";
     }
 }
