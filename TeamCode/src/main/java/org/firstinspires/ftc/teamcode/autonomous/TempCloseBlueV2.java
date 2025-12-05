@@ -16,14 +16,15 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
-@Autonomous(name = "TempCloseRed", group = "autonomous")
-public class TempCloseRed extends OpMode{
+@Autonomous(name = "TempCloseBlueV2", group = "autonomous")
+public class TempCloseBlueV2 extends OpMode{
 
     // PEDROPATHING VARS
 
@@ -51,19 +52,19 @@ public class TempCloseRed extends OpMode{
 
     // POSITIONS
 
-    private final Pose startPose = new Pose(28, 131, Math.toRadians(144)).mirror(); // STARTING POSITION was 23, 124 , 144
-    private final Pose preScorePose = new Pose(60, 104, Math.toRadians(144)).mirror(); // PRE-LOAD SCORING POSITION
-    private final Pose row1Line = new Pose(44.5, 84, Math.toRadians(0)).mirror(); // Position
-    private final Pose row1Line1CP = new Pose(91,84.5).mirror(); // CONTROL POINT
+    private final Pose startPose = new Pose(28, 131, Math.toRadians(144)); // STARTING POSITION was 23, 124 , 144
+    private final Pose preScorePose = new Pose(60, 104, Math.toRadians(146)); // PRE-LOAD SCORING POSITION
+    private final Pose row1Line = new Pose(44.5, 84, Math.toRadians(0)); // Position
+    private final Pose row1Line1CP = new Pose(91,84.5); // CONTROL POINT
 
-    private final Pose grabRow1 = new Pose(22.5, 84, Math.toRadians(0)).mirror(); // Position
-    private final Pose scoreRow1 = new Pose(61, 78, Math.toRadians(132)).mirror(); // Scoring
-    private final Pose row2Line = new Pose(44.5, 60, Math.toRadians(0)).mirror(); // Position
-    private final Pose row2LineCP = new Pose(85, 60).mirror();
-    private final Pose grabRow2 = new Pose(22.5, 60, Math.toRadians(0)).mirror();
-    private final Pose scoreRow2 = new Pose(61, 78, Math.toRadians(132)).mirror();
+    private final Pose grabRow1 = new Pose(22.5, 84, Math.toRadians(0)); // Position
+    private final Pose scoreRow1 = new Pose(61, 78, Math.toRadians(132)); // Scoring
+    private final Pose row2Line = new Pose(44.5, 60, Math.toRadians(0)); // Position
+    private final Pose row2LineCP = new Pose(85, 60);
+    private final Pose grabRow2 = new Pose(22.5, 60, Math.toRadians(0));
+    private final Pose scoreRow2 = new Pose(61, 78, Math.toRadians(132));
 
-    private final Pose parkPose = new Pose(50, 72, Math.toRadians(132)).mirror(); // PARKING POSITION
+    private final Pose parkPose = new Pose(50, 72, Math.toRadians(132)); // PARKING POSITION
 
 
 
@@ -105,9 +106,9 @@ public class TempCloseRed extends OpMode{
     private double ascendDur = 500;
 
     private double intakeDur = 700;
-    private double feedDur = 500; // was 650
+    private double feedDur = 650; // was 650
     private double retDur = 300; // was 300???
-    private double beltDur = 350; // was 450, 250 gets closer for shooting but not intake wise.
+    private double beltDur = 300; // was 450, 250 gets closer for shooting but not intake wise.
     private int fcount = 0;
 
 
@@ -141,6 +142,18 @@ public class TempCloseRed extends OpMode{
         br = hardwareMap.get(CRServo.class, "br");
         ascension = hardwareMap.get(CRServo.class, "ascension");
         blocker = hardwareMap.get(Servo.class, "blocker");
+
+        MotorConfigurationType configRs = rs.getMotorType().clone();
+        configRs.setAchieveableMaxRPMFraction(1.0);
+        rs.setMotorType(configRs);
+        rs.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rs.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        MotorConfigurationType configLs = ls.getMotorType().clone();
+        configRs.setAchieveableMaxRPMFraction(1.0);
+        ls.setMotorType(configLs);
+        ls.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        ls.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         ls.setDirection(DcMotorSimple.Direction.FORWARD);
         rs.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -454,7 +467,7 @@ public class TempCloseRed extends OpMode{
             shootTimerCount = 1;
         }
 
-        if (shootTimer.milliseconds() < 9000 && fcount <= 8 && shootTimerCount == 1){
+        if (shootTimer.milliseconds() < 17000 && fcount <= 8 && shootTimerCount == 1){
             feedLauncher();
         }
         else if (shootTimerCount == 1)

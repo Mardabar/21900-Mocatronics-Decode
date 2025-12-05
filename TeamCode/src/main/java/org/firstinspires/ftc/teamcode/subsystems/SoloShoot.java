@@ -117,6 +117,17 @@ public class SoloShoot {
         } else {
             launchPower = 0;
         }
+        updateLaunchers();
+
+        if (gamepad.left_trigger > 0.2) {
+            elbow.setPower(0.3);
+        }
+        else if (gamepad.right_trigger > 0.2) {
+            elbow.setPower(-0.3);
+        }
+        else {
+            elbow.setPower(0);
+        }
 
 
     }
