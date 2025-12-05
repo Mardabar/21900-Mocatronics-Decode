@@ -25,7 +25,7 @@ public class ShootSystem {
 
     // CONSTANTS
 
-    private final double OVERSHOOT_VEL_MULT = 1.68;
+    private final double OVERSHOOT_VEL_MULT = 1.708;
     private final double OVERSHOOT_ANG_MULT = 1;
     private final double ANGLE_CONST = 2.08833333;
     private final int ELBOW_GEAR_RATIO = 28;
@@ -44,9 +44,9 @@ public class ShootSystem {
     private double feedPos = 0.02;
     private ElapsedTime blockTimer;
     private ElapsedTime feedTimer;
-    private double feedDur = 650;
+    private double feedDur = 750;
     private double retDur = 300;
-    private double beltDur = 450;
+    private double beltDur = 550;
     private int feeding = 2;
     private int fcount;
     private boolean flysSpeedy;
@@ -88,7 +88,7 @@ public class ShootSystem {
 
                 setShootPos(tagDist);
                 feeding = 2;
-                blocker.setPosition(0);
+                blocker.setPosition(1);
                 blockTimer.reset();
 
                 ls.setMotorEnable();
@@ -114,7 +114,7 @@ public class ShootSystem {
     }
 
     public void resetBack(){
-        feeding = 1;
+        feeding = 2;
         fcount = 0;
         blocker.setPosition(1);
         ascension.setPower(0);
@@ -137,7 +137,7 @@ public class ShootSystem {
         dist *= 1.3;
 
         // The angle and velocity are both calculated using the distance we found
-        shootAngle = ((distToAngle(dist) * OVERSHOOT_ANG_MULT) - 53.5);
+        shootAngle = ((distToAngle(dist) * OVERSHOOT_ANG_MULT) - 56);
         shootVel = angleToVel(distToAngle(dist)) * OVERSHOOT_VEL_MULT;
 
         shootPrep = false;
@@ -152,7 +152,7 @@ public class ShootSystem {
         double dist = (Math.sqrt(Math.pow(fx - ix, 2) + Math.pow(fy - iy, 2)) / 40) * 1.3;
 
         // The angle and velocity are both calculated using the distance we found
-        shootAngle = ((distToAngle(dist) * OVERSHOOT_ANG_MULT) - 53.5);
+        shootAngle = ((distToAngle(dist) * OVERSHOOT_ANG_MULT) - 56);
         shootVel = angleToVel(distToAngle(dist)) * OVERSHOOT_VEL_MULT;
     }
 

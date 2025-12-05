@@ -47,7 +47,7 @@ public class StraferMain extends LinearOpMode{
 
     private double mainSpeed = 1;
     private double speed;
-    private double turnMult = 1.6;
+    private double turnMult = 0.8;
     private double slowMult = 0.4;
     private double fastMult = 1.8;
 
