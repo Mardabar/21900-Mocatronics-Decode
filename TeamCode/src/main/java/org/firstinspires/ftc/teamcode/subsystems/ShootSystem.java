@@ -25,7 +25,7 @@ public class ShootSystem {
 
     // CONSTANTS
 
-    private final double OVERSHOOT_VEL_MULT = 1.64;
+    private final double OVERSHOOT_VEL_MULT = 1.628;
     private final double OVERSHOOT_ANG_MULT = 1;
     private final double ANGLE_CONST = 2.08833333;
     private final int ELBOW_GEAR_RATIO = 28;
@@ -41,7 +41,7 @@ public class ShootSystem {
     // FEEDING VARS
 
     private double openPos = 0.53;
-    private double feedPos = 0.05; // 0.02
+    private double feedPos = 0.03; // 0.02
     private ElapsedTime blockTimer;
     private ElapsedTime feedTimer;
     private double beltDur = 550;
@@ -108,10 +108,10 @@ public class ShootSystem {
 
         if (ls.getVelocity() < shootRot + 15 && rs.getVelocity() < shootRot + 15)
             setElbowTarget(getAngleEnc());
-        ls.setVelocity(shootRot + 125);
-        rs.setVelocity(shootRot + 25);
+        ls.setVelocity(shootRot + 250);
+        rs.setVelocity(shootRot - 100);
 
-        if (!flysSpeedy && ls.getVelocity() >= shootRot && rs.getVelocity() >= shootRot)
+        if (!flysSpeedy && ls.getVelocity() >= (shootRot + 250) && rs.getVelocity() >= (shootRot - 100))
             flysSpeedy = true;
         if (flysSpeedy) {
             feedLauncher();
@@ -179,7 +179,7 @@ public class ShootSystem {
             runBelt(0);
         }
         else {
-            if (ls.getVelocity() >= getShootVel() - 30 && rs.getVelocity() >= getShootVel() - 30) {
+            if (ls.getVelocity() >= (getShootVel() + 250) - 30 && rs.getVelocity() >= (getShootVel() - 100) - 30) {
                 if (feeding == 2)
                     feeding = 0;
                 else
