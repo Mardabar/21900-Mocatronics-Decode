@@ -616,10 +616,10 @@ public class StraferMain extends LinearOpMode{
             runBelt(0);
         }
         else if (feedTimer.milliseconds() < ascendDur && feeding == 1){
-            ascension.setPower(1);
+            ascension.setPower(.22);
         }
         else if (feedTimer.milliseconds() < retDur && feeding == 2) {
-            blocker.setPosition(1);
+            blocker.setPosition(.22);
             ascension.setPower(0);
             runBelt(-beltSpeed);
         }
