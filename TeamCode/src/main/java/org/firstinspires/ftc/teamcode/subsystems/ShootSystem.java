@@ -25,7 +25,7 @@ public class ShootSystem {
 
     // CONSTANTS
 
-    private final double OVERSHOOT_VEL_MULT = 1.628;
+    private final double OVERSHOOT_VEL_MULT = 1.618;
     private final double OVERSHOOT_ANG_MULT = 1;
     private final double ANGLE_CONST = 2.08833333;
     private final int ELBOW_GEAR_RATIO = 28;

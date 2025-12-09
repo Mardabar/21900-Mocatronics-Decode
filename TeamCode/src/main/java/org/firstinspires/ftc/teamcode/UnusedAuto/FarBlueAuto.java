@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.autonomous;
+package org.firstinspires.ftc.teamcode.UnusedAuto;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
@@ -23,8 +23,8 @@ import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 @Disabled
-@Autonomous(name = "CDONT USE THIS", group = "autonomous")
-public class FarBlueAutoV2 extends OpMode{
+@Autonomous(name = "ADONT USE THIS", group = "autonomous")
+public class FarBlueAuto extends OpMode{
 
     // PEDROPATHING VARS
 
@@ -68,7 +68,7 @@ public class FarBlueAutoV2 extends OpMode{
     private final Pose Ob21GrabGPP3 = new Pose(19, 42, Math.toRadians(90)); // POSITION
     private final Pose Ob21Score3 = new Pose(61, 18, Math.toRadians(115)); // POSITION
 
-    // Obelisk #22 PGP --------------------------------------------------
+    // Obelisk #22 PGP--------------------------------------------------
     private final Pose Ob22Grab1P1 = new Pose(36, 84, Math.toRadians(0)); // POSITION
     private final Pose Ob22Grab1P1CP = new Pose(70, 96, Math.toRadians(0)); // CONTROL POINT
     private final Pose Ob22Grab2GP1 = new Pose(31, 35.5, Math.toRadians(0)); // POSITION
@@ -148,7 +148,7 @@ public class FarBlueAutoV2 extends OpMode{
     private int timerCount = -1;
 
     private ElapsedTime shootTimer;
-    private int shootTimerCount = -1;
+    private int shootTimerCount = -2;
 
     @Override
     public void init(){
@@ -217,7 +217,6 @@ public class FarBlueAutoV2 extends OpMode{
         autonomousPathUpdate();
 
         // This stores the ending position of the bot at the end of auto
-        Pose finalPose = fol.getPose();
 
         // Not sure if this is in the right spot :skull:
         // Its either inside the loop or outside but outside prolly wouldnt make sense
@@ -399,14 +398,6 @@ public class FarBlueAutoV2 extends OpMode{
         }
     }
 
-    // LEIFAGE THIS IS FOR YOU PLZ READ
-    // Bassically when the bot was moving to that pose to shoot it also
-    // When the bot reached the end of that one path it got stuck because your shoot function started immediatly after the path is complete because you had it checked by fol.isbusy
-    // This started the other motors which caused a tiny bit of a shift of the bots gravity along with the momentum the bot has from moving into its shooting pose
-    // This caused the jerking back and forth.
-    // The bot gets to its pose but then the Shoot function causes the bot to move even in the slightest way which would normally be fine but you have it running in the same state that pedropathing is constantly checking, updating, and repositioning the bot.
-    // I fixed the error by simply seperating the move and the shoot functions by adding some more cases
-
     public void autonomousPathUpdate(){
         if (!tagFound){
             for (LLResultTypes.FiducialResult tag : cam.getLatestResult().getFiducialResults()){
@@ -414,6 +405,7 @@ public class FarBlueAutoV2 extends OpMode{
                     buildPaths(tag.getFiducialId());
                     foundTag = tag;
                     tagFound = true;
+                    cam.stop();
                     break;
                 }
             }
@@ -423,14 +415,17 @@ public class FarBlueAutoV2 extends OpMode{
                 case -1:
                     if (!fol.isBusy() && shootTimerCount == -1){
                         fol.followPath(pathOb21PreScore);
-                        setShootPos(Ob21Score1.getX(), Ob21Score1.getY(), 9, 135);
                     }
 
-                    if (shootTimerCount != 2)
+                    if (!fol.isBusy() && shootTimerCount != 2 && shootTimerCount != -2) {
+                        setShootPos(Ob21Score1.getX(), Ob21Score1.getY(), 135, 135);
                         shoot();
+                    }
+                    else if (shootTimerCount == -2)
+                        shootTimerCount = -1;
 
                     if (!fol.isBusy() && shootTimerCount == 2){
-                        shootTimerCount = -1;
+                        shootTimerCount = -2;
                         setPathState(0);
                     }
                     break;
@@ -438,7 +433,7 @@ public class FarBlueAutoV2 extends OpMode{
                 case 0:
                     if (!fol.isBusy() && pathState == 0){
                         fol.followPath(pathOb21Grab1GP1);
-                        setShootPos(Ob21Score1.getX(), Ob21Score1.getY(), 9, 135);
+                        setShootPos(Ob21Score1.getX(), Ob21Score1.getY(), 135, 135);
                         runBelt(-beltSpeed);
                         setPathState(1);
                     }
@@ -451,27 +446,20 @@ public class FarBlueAutoV2 extends OpMode{
                     }
                     break;
 
-                // Issue wouldve started here
                 case 2:
                     if (!fol.isBusy()){
                         fol.followPath(pathOb21Score1);
                         runBelt(0);
                         setPathState(21);
                     }
-                    break;
-                // I added case 21 and 22 to seperate the bot moving to its position/correcting itself and the shooting function.
-                // then only when the path is fully complete and at the right pos, the shoot function will occur
-                case 21:
-                    if (!fol.isBusy()){
-                        setPathState(22);
-                    }
-                    break;
 
-                case 22:
-                    if (shootTimerCount != 2) {
+                    if (!fol.isBusy() && shootTimerCount != 2 && shootTimerCount != -2)
                         shoot();
-                    } else {
+                    else if (shootTimerCount == -2)
                         shootTimerCount = -1;
+
+                    if (!fol.isBusy() && shootTimerCount == 2){
+                        shootTimerCount = -2;
                         setPathState(3);
                     }
                     break;
@@ -509,7 +497,7 @@ public class FarBlueAutoV2 extends OpMode{
                 case 6:
                     if (!fol.isBusy()){
                         fol.followPath(pathOb21Grab3);
-                        setShootPos(Ob21Score3.getX(), Ob21Score3.getY(), 9, 135);
+                        setShootPos(Ob21Score3.getX(), Ob21Score3.getY(), 135, 135);
                         setPathState(7);
                     }
                     break;
@@ -556,7 +544,7 @@ public class FarBlueAutoV2 extends OpMode{
                 case -1:
                     if (!fol.isBusy() && timerCount == -1){
                         fol.followPath(pathOb22PreScore);
-                        setShootPos(Ob21Score1.getX(), Ob21Score1.getY(), 9, 135);
+                        setShootPos(Ob21Score1.getX(), Ob21Score1.getY(), 135, 135);
                         shoot();
                         timerCount++;
                     }
@@ -571,7 +559,7 @@ public class FarBlueAutoV2 extends OpMode{
                 case 0:
                     if (!fol.isBusy() && timerCount == -1){
                         fol.followPath(pathOb22Grab1P1);
-                        setShootPos(Ob22Score1.getX(), Ob22Score1.getY(), 9, 135);
+                        setShootPos(Ob22Score1.getX(), Ob22Score1.getY(), 135, 135);
                         runBelt(-beltSpeed);
                         setPathState(1);
                     }
@@ -628,7 +616,7 @@ public class FarBlueAutoV2 extends OpMode{
                 case 6:
                     if (!fol.isBusy() && timerCount == -1){
                         fol.followPath(pathOb22Grab3);
-                        setShootPos(Ob22Score3.getX(), Ob22Score3.getY(), 9, 135);
+                        setShootPos(Ob22Score3.getX(), Ob22Score3.getY(), 135, 135);
                         setPathState(7);
                     }
                     break;
@@ -672,7 +660,7 @@ public class FarBlueAutoV2 extends OpMode{
                 case -1:
                     if (!fol.isBusy() && timerCount == -1){
                         fol.followPath(pathOb23PreScore);
-                        setShootPos(Ob21Score1.getX(), Ob21Score1.getY(), 9, 135);
+                        setShootPos(Ob21Score1.getX(), Ob21Score1.getY(), 135, 135);
                         shoot();
                         timerCount++;
                     }
@@ -687,7 +675,7 @@ public class FarBlueAutoV2 extends OpMode{
                 case 0:
                     if (!fol.isBusy() && timerCount == -1){
                         fol.followPath(pathOb23Grab1PP1);
-                        setShootPos(Ob23Score1.getX(), Ob23Score1.getY(), 9, 135);
+                        setShootPos(Ob23Score1.getX(), Ob23Score1.getY(), 135, 135);
                         runBelt(-beltSpeed);
                         setPathState(1);
                     }
@@ -899,7 +887,6 @@ public class FarBlueAutoV2 extends OpMode{
         double currentX = currentPose.getX();
         double currentY = currentPose.getY();
 
-        telemetry.addData("Current Path State", pathState);
         telemetry.addData("X Position", "%.2f", currentX);
         telemetry.addData("Y Position", "%.2f", currentY);
     }

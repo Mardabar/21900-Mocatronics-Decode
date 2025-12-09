@@ -25,14 +25,28 @@ public class SoloShoot {
 
     // Holds the power of the motor so it doesn't get messed up with the if statement here
     private double currentPower = middlePower;
-
-
     // Will be used to update and change in real time until I find proper values for each individual shootMode
     public static double middlePower = 0.50;  // Default power for Middle D-Pad Up
     public static double backPower = 0.75;    // Default power for Back D-Pad Down
     public static double topPower = 0.55;     // Default power for Top D-Pad Right
     public static double boxPower = 0.40;     // Default power for Box D-Pad Left
     public static double blockerPos = 0;
+
+
+
+    private final double OVERSHOOT_VEL_MULT = 1.618;
+    private final double OVERSHOOT_ANG_MULT = 1;
+    private final double ANGLE_CONST = 2.08833333;
+    private final int ELBOW_GEAR_RATIO = 28;
+    private final double MAX_HEIGHT = 1.4;
+
+    // SHOOT VARS
+
+    public boolean shootPrep;
+    public boolean shootReady;
+    private double shootAngle;
+    private double shootVel;
+
 
     public SoloShoot(HardwareMap hardwareMap){
 
@@ -65,6 +79,56 @@ public class SoloShoot {
 
     }
 
+    private void setShootPos(double dist){
+        /* dist is the total distance the ball will travel until it hits the ground
+           it's multiplied by 1.3 because the ball will hit the goal first, so using the
+           equation, it'll be about 1 meter high (the height of the goal) when it hit our requested distance
+         */
+        dist *= 1.3;
+
+        // The angle and velocity are both calculated using the distance we found
+        shootAngle = ((distToAngle(dist) * OVERSHOOT_ANG_MULT) - 56);
+        shootVel = angleToVel(distToAngle(dist)) * OVERSHOOT_VEL_MULT;
+
+        shootPrep = false;
+        shootReady = true;
+    }
+
+    public double getAngleEnc(){
+        return angleToEncoder(shootAngle);
+    }
+
+    public double getShootVel(){
+        return velToRot(shootVel);
+    }
+
+    public double getShootAngle(){
+        return shootAngle;
+    }
+
+    // CONVERSIONS
+
+    public double distToAngle(double dist){
+        return Math.toDegrees(Math.atan(54.88 / (9.8 * dist)));
+    }
+
+    // This function translates angle to velocity using the already set maximum height
+    public double angleToVel(double angle){
+        return Math.sqrt((MAX_HEIGHT * 19.6) / Math.pow(Math.sin(Math.toRadians(angle)), 2));
+    }
+
+    // This function translates velocity to motor power specifically for 6000 RPM motors combined with 72 mm Gecko Wheels
+    public double velToRot(double vel){
+        return (vel / (7.2 * Math.PI)) * 2800;
+    }
+
+    // This function translates an angle in degrees to an encoder value on 223 RPM motors
+    public double angleToEncoder(double angle){
+        return angle * ANGLE_CONST * ELBOW_GEAR_RATIO;
+    }
+
+
+
 
     // This updates in teleop
     public void update1(Gamepad gamepad){
@@ -87,37 +151,39 @@ public class SoloShoot {
         }
 
 
-        // Power swap
-        if (gamepad.dpad_up) {
-            shootMode = "Middle";
-            currentPower = middlePower; // .5
-        }
-        // When robot is at the back of the field in the triangle box
-        // Power will need to be high here
-        else if (gamepad.dpad_down) {
-            shootMode = "Back";
-            currentPower = backPower; // .75
-        }
-        // When robot is at the tip of the shooting triangle box thingy
-        else if (gamepad.dpad_right) {
-            shootMode = "Top";
-            currentPower = topPower; // .55
-        }
-        // When robot is at the bottom of the lebron box thingy
-        // Relatively low power here
-        else if (gamepad.dpad_left) {
-            shootMode = "Box";
-            currentPower = boxPower; // .3
-        }
 
 
-        if (gamepad.a) {
-            // If Y is pressed sets the desired speed
-            launchPower = currentPower;
-        } else {
-            launchPower = 0;
-        }
-        updateLaunchers();
+//        // Power swap
+//        if (gamepad.dpad_up) {
+//            shootMode = "Middle";
+//            currentPower = middlePower; // .5
+//        }
+//        // When robot is at the back of the field in the triangle box
+//        // Power will need to be high here
+//        else if (gamepad.dpad_down) {
+//            shootMode = "Back";
+//            currentPower = backPower; // .75
+//        }
+//        // When robot is at the tip of the shooting triangle box thingy
+//        else if (gamepad.dpad_right) {
+//            shootMode = "Top";
+//            currentPower = topPower; // .55
+//        }
+//        // When robot is at the bottom of the lebron box thingy
+//        // Relatively low power here
+//        else if (gamepad.dpad_left) {
+//            shootMode = "Box";
+//            currentPower = boxPower; // .3
+//        }
+//
+//
+//        if (gamepad.a) {
+//            // If Y is pressed sets the desired speed
+//            launchPower = currentPower;
+//        } else {
+//            launchPower = 0;
+//        }
+//        updateLaunchers();
 
         if (gamepad.left_trigger > 0.2) {
             elbow.setPower(0.3);

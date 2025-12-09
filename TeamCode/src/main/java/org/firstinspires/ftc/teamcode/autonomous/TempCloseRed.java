@@ -49,18 +49,18 @@ public class TempCloseRed extends OpMode{
 
     // POSITIONS
 
-    private final Pose startPose = new Pose(28, 131, Math.toRadians(144)).mirror(); // STARTING POSITION was 23, 124 , 144
-    private final Pose preScorePose = new Pose(60, 104, Math.toRadians(145.5)).mirror(); // PRE-LOAD SCORING POSITION
-    private final Pose row1Line = new Pose(44.5, 84, Math.toRadians(0)).mirror(); // Position
-    private final Pose row1Line1CP = new Pose(91,84).mirror(); // CONTROL POINT
+    private final Pose startPose = new Pose(28, 131, Math.toRadians(144)).mirror(); // Starting Point was 23, 124 , 144
+    private final Pose preScorePose = new Pose(60, 105, Math.toRadians(146)).mirror(); // PRE-LOAD SCORING POSITION
+    private final Pose lineRow1 = new Pose(46.5, 84, Math.toRadians(0)).mirror(); // Position
+    private final Pose lineRow1CP = new Pose(91,84).mirror(); // Control Point
     private final Pose grabRow1 = new Pose(30, 84, Math.toRadians(0)).mirror(); // Position
-    private final Pose scoreRow1 = new Pose(61, 78, Math.toRadians(132)).mirror(); // Scoring
-    private final Pose row2Line = new Pose(47, 60, Math.toRadians(0)).mirror(); // Position
-    private final Pose row2LineCP = new Pose(85, 60).mirror();
-    private final Pose grabRow2 = new Pose(30, 59.5, Math.toRadians(0)).mirror();
-    private final Pose scoreRow2 = new Pose(61, 78, Math.toRadians(132)).mirror();
+    private final Pose scoreRow1 = new Pose(61, 78, Math.toRadians(132)).mirror(); // Scoring Position
+    private final Pose lineRow2 = new Pose(46.5, 60, Math.toRadians(0)).mirror(); // Position
+    private final Pose row2LineCP = new Pose(85, 60).mirror(); // Control Point
+    private final Pose grabRow2 = new Pose(30, 59.5, Math.toRadians(0)).mirror(); // Position
+    private final Pose scoreRow2 = new Pose(61, 78, Math.toRadians(132)).mirror(); // Scoring Position
 
-    private final Pose parkPose = new Pose(50, 72, Math.toRadians(132)).mirror(); // PARKING POSITION
+    private final Pose parkPose = new Pose(50, 72, Math.toRadians(132)).mirror(); // Parking Position
 
 
 
@@ -86,6 +86,9 @@ public class TempCloseRed extends OpMode{
     private double shootVel;
     private double shootAngle;
 
+    private double fx = 10; // was 9
+    private double fy = 136.5; // was 135
+
 
     // INTAKE VARS
     private double elbowSpeed = 0.5;
@@ -99,9 +102,9 @@ public class TempCloseRed extends OpMode{
 
     // TIMER VARS
     private ElapsedTime feedTimer;
-    private double feedDur = 450; // was 400
+    private double feedDur = 450; // was 450
     private double retDur = 600; // was 1000
-    private double beltDur = 600; // was 500, 300
+    private double beltDur = 500; // was 500, 300
     private int feeding = 0;
     private int fcount = 0;
 
@@ -172,17 +175,6 @@ public class TempCloseRed extends OpMode{
         opmodeTimer.resetTimer();
 
 
-        // CAMERA INIT
-
-    /*    tagFound = false;
-
-        cam = hardwareMap.get(Limelight3A.class, "limelight");
-        cam.pipelineSwitch(0);
-
-        cam.start(); */
-
-        // The magic begins
-        buildPaths(0);
         setPathState(-1);
 
     }
@@ -199,66 +191,16 @@ public class TempCloseRed extends OpMode{
         updatePos();
     }
 
-    public void buildPaths(int obNum){
 
-        pathPreScore = fol.pathBuilder()
-                .addPath(new BezierLine(startPose, preScorePose))
-                .setLinearHeadingInterpolation(startPose.getHeading(), preScorePose.getHeading())
-                .build();
 
-        pathRow1Line = fol.pathBuilder()
-                .addPath(new BezierCurve(preScorePose, row1Line1CP, row1Line))
-                .setLinearHeadingInterpolation(preScorePose.getHeading(), row1Line.getHeading())
-                //.setTangentHeadingInterpolation()
-                .build();
-
-        pathGrabRow1 = fol.pathBuilder()
-                .addPath(new BezierLine(row1Line, grabRow1))
-                .setLinearHeadingInterpolation(row1Line.getHeading(), grabRow1.getHeading())
-                .build();
-
-        pathScoreRow1 = fol.pathBuilder()
-                .addPath(new BezierLine(grabRow1, scoreRow1))
-                .setLinearHeadingInterpolation(grabRow1.getHeading(), scoreRow1.getHeading())
-                .build();
-
-        pathRow2Line = fol.pathBuilder()
-                .addPath(new BezierLine(scoreRow1, row2Line))
-                .setLinearHeadingInterpolation(scoreRow1.getHeading(), row2Line.getHeading())
-                .build();
-
-        pathGrabRow2 = fol.pathBuilder()
-                .addPath(new BezierLine(row2Line, grabRow2))
-                .setLinearHeadingInterpolation(row2Line.getHeading(), grabRow2.getHeading())
-                .build();
-
-        pathScoreRow2 = fol.pathBuilder()
-                .addPath(new BezierLine(grabRow2, scoreRow2))
-                .setLinearHeadingInterpolation(grabRow2.getHeading(), scoreRow2.getHeading())
-                .build();
-
-        pathParkPose = fol.pathBuilder()
-                .addPath(new BezierLine(scoreRow2, parkPose))
-                .setLinearHeadingInterpolation(scoreRow2.getHeading(), parkPose.getHeading())
-                .build();
-    }
-
-    // LEIFAGE THIS IS FOR YOU PLZ READ
-    // Bassically when the bot was moving to that pose to shoot it also
-    // When the bot reached the end of that one path it got stuck because your shoot function started immediatly after the path is complete because you had it checked by fol.isbusy
-    // This started the other motors which caused a tiny bit of a shift of the bots gravity along with the momentum the bot has from moving into its shooting pose
-    // This caused the jerking back and forth.
-    // The bot gets to its pose but then the Shoot function causes the bot to move even in the slightest way which would normally be fine but you have it running in the same state that pedropathing is constantly checking, updating, and repositioning the bot.
-    // I fixed the error by simply seperating the move and the shoot functions by adding some more cases
 
     public void autonomousPathUpdate(){
 
         switch (pathState) {
-            // Edited so it runs to the first pose and scores preloads
             case -1:
                 if (!fol.isBusy()){
                     fol.followPath(pathPreScore);
-                    setShootPos(preScorePose.getX(), preScorePose.getY(), 9, 135);
+                    setShootPos(preScorePose.getX(), preScorePose.getY(), fx, fy);
                     runBelt(0);
                     setPathState(-2);
                 }
@@ -282,7 +224,7 @@ public class TempCloseRed extends OpMode{
             case 0:
                 if (!fol.isBusy() && pathState == 0) {
                     fol.followPath(pathRow1Line);
-                    setShootPos(preScorePose.getX(), preScorePose.getY(), 10, 136.5); // was 9 , 135
+                    setShootPos(preScorePose.getX(), preScorePose.getY(), fx, fy);
                     setPathState(1);
                 }
                 break;
@@ -300,8 +242,8 @@ public class TempCloseRed extends OpMode{
                 if (!fol.isBusy()){
                     fol.followPath(pathScoreRow1);
                     fol.setMaxPower(1);
-                    setShootPos(scoreRow1.getX(), scoreRow1.getY(), 10, 136.6); // was 9 135
-                    //runBelt(beltSpeed);
+                    setShootPos(scoreRow1.getX(), scoreRow1.getY(), fx, fy);
+                    runBelt(0);
                     setPathState(3);
                 }
                 break;
@@ -325,7 +267,7 @@ public class TempCloseRed extends OpMode{
                 if (!fol.isBusy() && pathState == 5){
                     fol.followPath(pathRow2Line);
                     runBelt(beltSpeed);
-                    setShootPos(scoreRow2.getX(), scoreRow2.getY(), 10, 136.5);
+                    setShootPos(scoreRow2.getX(), scoreRow2.getY(), fx, fy);
                     setPathState(6);
                 }
                 break;
@@ -344,7 +286,7 @@ public class TempCloseRed extends OpMode{
                 if (!fol.isBusy()){
                     fol.setMaxPower(1);
                     fol.followPath(pathScoreRow2);
-                    setShootPos(scoreRow2.getX(), scoreRow2.getY(), 13, 138);
+                    setShootPos(scoreRow2.getX(), scoreRow2.getY(), fx, fy);
                     runBelt(0);
                     setPathState(8);
                 }
@@ -377,9 +319,6 @@ public class TempCloseRed extends OpMode{
         }
     }
 
-    private void setChainNum(int num){
-        chainNum = num;
-    }
 
     private void setPathState(int num){
         pathState = num;
@@ -451,7 +390,7 @@ public class TempCloseRed extends OpMode{
             shootTimerCount = 1;
         }
         // Changed the multiplier to 2 because we are grabbing 2 balls instead of 3
-        if (shootTimer.milliseconds() < 13000 && fcount <= 6 && shootTimerCount == 1){
+        if (shootTimer.milliseconds() < 7000 && fcount <= 6 && shootTimerCount == 1){
             feedLauncher();
         }
         else if (shootTimerCount == 1)
@@ -489,7 +428,7 @@ public class TempCloseRed extends OpMode{
             runBelt(beltSpeed);
         }
         else {
-            if (ls.getVelocity() >= velToPow(shootVel) - 30 && rs.getVelocity() >= velToPow(shootVel) - 30) {
+            if (ls.getVelocity() >= velToPow(shootVel) && rs.getVelocity() >= velToPow(shootVel)) {
                 if (feeding == 2)
                     feeding = 0;
                 else

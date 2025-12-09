@@ -15,11 +15,11 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 
 @Config
 @Configurable
-public class Intake {
+public class Intake extends SubsystemBase{
 
-    private DcMotor belt;
-    private CRServo br;
-    private CRServo bl;
+    public DcMotor belt;
+    public CRServo br;
+    public CRServo bl;
 
     public static double speed;
 
@@ -40,17 +40,11 @@ public class Intake {
 
     public void update1(Gamepad gamepad){
         if(gamepad.b){
-            belt.setPower(1);
-            br.setPower(1);
-            bl.setPower(-1);
+            runBelt(1);
         } else if (gamepad.x){
-            belt.setPower(-1);
-            br.setPower(-1);
-            bl.setPower(1);
+            runBelt(-1);
         } else {
-            belt.setPower(0);
-            br.setPower(0);
-            bl.setPower(0);
+            runBelt(0);
         }
     }
 

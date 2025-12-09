@@ -171,6 +171,10 @@ public class StraferMain extends LinearOpMode{
         // The robot waits for the opmode to become active
         waitForStart();
         while (opModeIsActive()){
+            telemetry.addData("rs velo", rs.getVelocity());
+            telemetry.addData("ls velo", ls.getVelocity());
+            telemetry.addData("elbow pos", elbow.getCurrentPosition());
+
             if (!modeSelected){
                 if (gamepad1.left_stick_button)
                     color = 1;
