@@ -35,19 +35,19 @@ public class TempFarRed extends OpMode{
 
     // POSITIONS
 
-    private final Pose Start = new Pose(88, 9, Math.toRadians(90)); // STARTING POSITION
-    private final Pose PreScore = new Pose(84, 22, Math.toRadians(64)); // PRE-LOAD SCORING POSITION
-    private final Pose Grab1Set = new Pose(99, 34.4, Math.toRadians(180)); // POSITION
-    private final Pose Grab1 = new Pose(124, 34.4, Math.toRadians(180)); // POSITION
-    private final Pose Score1 = new Pose(84, 75, Math.toRadians(46.5)); // POSITION
-    private final Pose Score1CP = new Pose(84, 34.4, Math.toRadians(46.5)); // CONTROL POINT
-    private final Pose Grab2Set = new Pose(99, 60, Math.toRadians(180)); // POSITION
-    private final Pose Grab2 = new Pose(124, 60, Math.toRadians(180)); // POSITION
-    private final Pose Score2 = new Pose(84, 75, Math.toRadians(41)); // POSITION
-    private final Pose Grab3Set = new Pose(99, 84, Math.toRadians(180)); // POSITION
-    private final Pose Grab3 = new Pose(124, 84, Math.toRadians(180)); // POSITION
-    private final Pose Score3 = new Pose(84, 75, Math.toRadians(44)); // POSITION
-    private final Pose parkPose = new Pose(94, 65, Math.toRadians(44)); // PARKING POSITION
+    private final Pose Start = new Pose(56, 8.6, Math.toRadians(90)).mirror(); // STARTING POSITION
+    private final Pose preScorePose = new Pose(60, 22, Math.toRadians(115)).mirror(); // PRE-LOAD SCORING POSITION
+    private final Pose row1Line = new Pose(45, 35.5, Math.toRadians(0)).mirror(); // POSITION
+    private final Pose row1Grab = new Pose(30, 35.5, Math.toRadians(0)).mirror(); // POSITION
+    private final Pose row1Score = new Pose(60, 75, Math.toRadians(131)).mirror(); // POSITION
+    private final Pose row1ScoreCP = new Pose(60, 34.4, Math.toRadians(131)).mirror(); // CONTROL POINT
+    private final Pose row2Line = new Pose(45, 60, Math.toRadians(0)).mirror(); // POSITION
+    private final Pose row2Grab = new Pose(31, 60, Math.toRadians(0)).mirror(); // POSITION
+    private final Pose row2Score = new Pose(60, 75, Math.toRadians(139)).mirror(); // POSITION
+    private final Pose Grab3Set = new Pose(45, 84, Math.toRadians(0)).mirror(); // POSITION
+    private final Pose Grab3 = new Pose(31, 84, Math.toRadians(0)).mirror(); // POSITION
+    private final Pose Score3 = new Pose(60, 75, Math.toRadians(136)).mirror(); // POSITION
+    private final Pose parkPose = new Pose(50, 65, Math.toRadians(139)).mirror(); // PARKING POSITION
 
     // SHOOTING VARS
 
@@ -56,7 +56,7 @@ public class TempFarRed extends OpMode{
     private DcMotor belt;
     private DcMotor elbow;
 
-    private final double OVERSHOOT_VEL_MULT = 1.5;
+    private final double OVERSHOOT_VEL_MULT = 1.68;
     private final double OVERSHOOT_ANG_MULT = 1;
     private final double ANGLE_CONST = 2.08833333;
     private final int ELBOW_GEAR_RATIO = 4;
@@ -75,16 +75,19 @@ public class TempFarRed extends OpMode{
     private double openPos = 0.53;
     private double feedPos = 0.02;
     private ElapsedTime feedTimer;
-    private double feedDur = 650;
-    private double retDur = 300;
-    private double beltDur = 450;
+    private double feedDur = 450; // was 400
+    private double retDur = 600; // was 1000
+    private double beltDur = 800; // was 500, 300
     private int feeding = 0;
     private int fcount = 0;
 
+    private double fx = 10;
+    private double fy = 136.5;
+
+
     // PATH CHAIN
 
-    private PathChain pathPreScore, pathGrab1Set, pathGrab1, pathScore1, pathGrab2Set, pathGrab2,
-            pathScore2, pathGrab3Set, pathGrab3, pathScore3, pathPark;
+    private PathChain pathPreScore, pathRow1Line, pathRow1Grab, pathRow1Score, pathRow2Line, pathRow2Grab, pathRow2Score, pathParkPose;
 
     // OTHER VARS
 
@@ -100,6 +103,7 @@ public class TempFarRed extends OpMode{
         // HARDWARE INIT
         fol = Constants.createFollower(hardwareMap);
         fol.setStartingPose(Start);
+
 
         ls = hardwareMap.get(DcMotorEx.class, "ls");
         rs = hardwareMap.get(DcMotorEx.class, "rs");
@@ -152,59 +156,59 @@ public class TempFarRed extends OpMode{
 
     public void buildPaths(int obNum) {
         pathPreScore = fol.pathBuilder()
-                .addPath(new BezierLine(Start, PreScore))
-                .setLinearHeadingInterpolation(Start.getHeading(), PreScore.getHeading())
+                .addPath(new BezierLine(Start, preScorePose))
+                .setLinearHeadingInterpolation(Start.getHeading(), preScorePose.getHeading())
                 .setBrakingStrength(4)
                 .build();
 
-        pathGrab1Set = fol.pathBuilder()
-                .addPath(new BezierLine(PreScore, Grab1Set))
-                .setLinearHeadingInterpolation(PreScore.getHeading(), Grab1Set.getHeading())
+        pathRow1Line = fol.pathBuilder()
+                .addPath(new BezierLine(preScorePose, row1Line))
+                .setLinearHeadingInterpolation(preScorePose.getHeading(), row1Line.getHeading())
                 .build();
 
-        pathGrab1 = fol.pathBuilder()
-                .addPath(new BezierLine(Grab1Set, Grab1))
-                .setLinearHeadingInterpolation(Grab1Set.getHeading(), Grab1.getHeading())
+        pathRow1Grab = fol.pathBuilder()
+                .addPath(new BezierLine(row1Line, row1Grab))
+                .setLinearHeadingInterpolation(row1Line.getHeading(), row1Grab.getHeading())
                 .build();
 
-        pathScore1 = fol.pathBuilder()
-                .addPath(new BezierCurve(Grab1, Score1CP, Score1))
-                .setLinearHeadingInterpolation(Grab1.getHeading(), Score1.getHeading())
+        pathRow1Score = fol.pathBuilder()
+                .addPath(new BezierCurve(row1Grab, row1ScoreCP, row1Score))
+                .setLinearHeadingInterpolation(row1Grab.getHeading(), row1Score.getHeading())
                 .build();
 
-        pathGrab2Set = fol.pathBuilder()
-                .addPath(new BezierLine(Score1, Grab2Set))
-                .setLinearHeadingInterpolation(Score1.getHeading(), Grab2Set.getHeading())
+        pathRow2Line = fol.pathBuilder()
+                .addPath(new BezierLine(row1Score, row2Line))
+                .setLinearHeadingInterpolation(row1Score.getHeading(), row2Line.getHeading())
                 .build();
 
-        pathGrab2 = fol.pathBuilder()
-                .addPath(new BezierLine(Grab2Set, Grab2))
-                .setLinearHeadingInterpolation(Grab2Set.getHeading(), Grab2.getHeading())
+        pathRow2Grab = fol.pathBuilder()
+                .addPath(new BezierLine(row2Line, row2Grab))
+                .setLinearHeadingInterpolation(row2Line.getHeading(), row2Grab.getHeading())
                 .build();
 
-        pathScore2 = fol.pathBuilder()
-                .addPath(new BezierLine(Grab2, Score2))
-                .setLinearHeadingInterpolation(Grab2.getHeading(), Score2.getHeading())
+        pathRow2Score = fol.pathBuilder()
+                .addPath(new BezierLine(row2Grab, row2Score))
+                .setLinearHeadingInterpolation(row2Grab.getHeading(), row2Score.getHeading())
                 .build();
 
-        pathGrab3Set = fol.pathBuilder()
-                .addPath(new BezierLine(Score2, Grab3Set))
-                .setLinearHeadingInterpolation(Score2.getHeading(), Grab3Set.getHeading())
-                .build();
+//        pathGrab3Set = fol.pathBuilder()
+//                .addPath(new BezierLine(Score2, Grab3Set))
+//                .setLinearHeadingInterpolation(Score2.getHeading(), Grab3Set.getHeading())
+//                .build();
+//
+//        pathGrab3 = fol.pathBuilder()
+//                .addPath(new BezierLine(Grab3Set, Grab3))
+//                .setLinearHeadingInterpolation(Grab3Set.getHeading(), Grab3.getHeading())
+//                .build();
+//
+//        pathScore3 = fol.pathBuilder()
+//                .addPath(new BezierLine(Grab3, Score3))
+//                .setLinearHeadingInterpolation(Grab3.getHeading(), Score3.getHeading())
+//                .build();
 
-        pathGrab3 = fol.pathBuilder()
-                .addPath(new BezierLine(Grab3Set, Grab3))
-                .setLinearHeadingInterpolation(Grab3Set.getHeading(), Grab3.getHeading())
-                .build();
-
-        pathScore3 = fol.pathBuilder()
-                .addPath(new BezierLine(Grab3, Score3))
-                .setLinearHeadingInterpolation(Grab3.getHeading(), Score3.getHeading())
-                .build();
-
-        pathPark = fol.pathBuilder()
-                .addPath(new BezierLine(Score2, parkPose))
-                .setLinearHeadingInterpolation(Score2.getHeading(), parkPose.getHeading())
+        pathParkPose = fol.pathBuilder()
+                .addPath(new BezierLine(row2Score, parkPose))
+                .setLinearHeadingInterpolation(row2Score.getHeading(), parkPose.getHeading())
                 .build();
     }
 
@@ -213,7 +217,7 @@ public class TempFarRed extends OpMode{
             case -1:
                 if (!fol.isBusy()){
                     fol.followPath(pathPreScore);
-                    setShootPos(PreScore.getX(), PreScore.getY(), 9, 135);
+                    setShootPos(preScorePose.getX(), preScorePose.getY(), fx, fy);
                     fol.setMaxPower(1);
                     runBelt(0);
                     setPathState(-11);
@@ -237,15 +241,15 @@ public class TempFarRed extends OpMode{
 
             case 0:
                 if (!fol.isBusy() && pathState == 0) {
-                    fol.followPath(pathGrab1Set);
-                    setShootPos(Score1.getX(), Score1.getY(), 9, 135);
+                    fol.followPath(pathRow1Line);
+                    setShootPos(row1Score.getX(), row1Score.getY(), fx, fy);
                     setPathState(1);
                 }
                 break;
 
             case 1:
                 if (!fol.isBusy()) {
-                    fol.followPath(pathGrab1);
+                    fol.followPath(pathRow1Grab);
                     fol.setMaxPower(0.32);
                     runBelt(-beltSpeed);
                     setPathState(2);
@@ -254,7 +258,7 @@ public class TempFarRed extends OpMode{
 
             case 2:
                 if (!fol.isBusy()){
-                    fol.followPath(pathScore1);
+                    fol.followPath(pathRow1Score);
                     fol.setMaxPower(1);
                     setPathState(21);
                 }
@@ -278,14 +282,14 @@ public class TempFarRed extends OpMode{
 
             case 3:
                 if (!fol.isBusy()) {
-                    fol.followPath(pathGrab2Set);
+                    fol.followPath(pathRow2Line);
                     setPathState(4);
                 }
                 break;
 
             case 4:
                 if (!fol.isBusy()) {
-                    fol.followPath(pathGrab2);
+                    fol.followPath(pathRow2Grab);
                     fol.setMaxPower(0.32);
                     runBelt(-beltSpeed);
                     setPathState(5);
@@ -294,7 +298,7 @@ public class TempFarRed extends OpMode{
 
             case 5:
                 if (!fol.isBusy()){
-                    fol.followPath(pathScore2);
+                    fol.followPath(pathRow2Score);
                     fol.setMaxPower(1);
                     setPathState(51);
                 }
@@ -316,49 +320,9 @@ public class TempFarRed extends OpMode{
                 }
                 break;
 
-            case 6:
-                if (!fol.isBusy()) {
-                    fol.followPath(pathGrab3Set);
-                    setPathState(7);
-                }
-                break;
-
-            case 7:
-                if (!fol.isBusy()) {
-                    fol.followPath(pathGrab3);
-                    runBelt(-beltSpeed);
-                    fol.setMaxPower(0.32);
-                    setPathState(8);
-                }
-                break;
-
-            case 8:
-                if (!fol.isBusy()){
-                    fol.followPath(pathScore3);
-                    fol.setMaxPower(1);
-                    setPathState(81);
-                }
-                break;
-
-            case 81:
-                if (!fol.isBusy()){
-                    setPathState(82);
-                    runBelt(0);
-                }
-                break;
-
-            case 82:
-                if (shootTimerCount != 2)
-                    shoot();
-                else {
-                    shootTimerCount = -1;
-                    setPathState(9);
-                }
-                break;
-
             case 9:
                 if (!fol.isBusy()) {
-                    fol.followPath(pathPark);
+                    fol.followPath(pathParkPose);
                     setPathState(10);
                 }
                 break;
@@ -433,7 +397,7 @@ public class TempFarRed extends OpMode{
             shootTimerCount = 0;
         }
 
-        if (shootTimer.milliseconds() < 1200 && shootTimerCount == 0){
+        if (shootTimer.milliseconds() < 1200 && shootTimerCount == 0 /* && shootPos == 1*/){
             ls.setVelocity(velToPow(shootVel));
             rs.setVelocity(velToPow(shootVel));
         }
@@ -442,8 +406,8 @@ public class TempFarRed extends OpMode{
             feedTimer.reset();
             shootTimerCount = 1;
         }
-
-        if (shootTimer.milliseconds() < 8000 && fcount <= 8 && shootTimerCount == 1){
+        // Changed the multiplier to 6 instead of 8
+        if (shootTimer.milliseconds() < 9000 && fcount <= 6 ){
             feedLauncher();
         }
         else if (shootTimerCount == 1)
@@ -481,7 +445,7 @@ public class TempFarRed extends OpMode{
             runBelt(-beltSpeed);
         }
         else {
-            if (ls.getVelocity() >= velToPow(shootVel) - 30 && rs.getVelocity() >= velToPow(shootVel) - 30) {
+            if (ls.getVelocity() >= velToPow(shootVel) - 20 && rs.getVelocity() >= velToPow(shootVel) - 20) {
                 if (feeding == 2)
                     feeding = 0;
                 else

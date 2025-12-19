@@ -37,10 +37,10 @@ public class TempFarBlue extends OpMode{
 
     private final Pose Start = new Pose(56, 8.6, Math.toRadians(90)); // STARTING POSITION
     private final Pose preScorePose = new Pose(60, 22, Math.toRadians(115)); // PRE-LOAD SCORING POSITION
-    private final Pose row1Line = new Pose(45, 35, Math.toRadians(0)); // POSITION
-    private final Pose row1Grab = new Pose(30, 35, Math.toRadians(0)); // POSITION
-    private final Pose row1Score = new Pose(60, 75, Math.toRadians(133.5)); // POSITION
-    private final Pose row1ScoreCP = new Pose(60, 34.4, Math.toRadians(133.5)); // CONTROL POINT
+    private final Pose row1Line = new Pose(45, 35.5, Math.toRadians(0)); // POSITION
+    private final Pose row1Grab = new Pose(30, 35.5, Math.toRadians(0)); // POSITION
+    private final Pose row1Score = new Pose(60, 75, Math.toRadians(131)); // POSITION
+    private final Pose row1ScoreCP = new Pose(60, 34.4, Math.toRadians(131)); // CONTROL POINT
     private final Pose row2Line = new Pose(45, 60, Math.toRadians(0)); // POSITION
     private final Pose row2Grab = new Pose(31, 60, Math.toRadians(0)); // POSITION
     private final Pose row2Score = new Pose(60, 75, Math.toRadians(139)); // POSITION
@@ -56,7 +56,7 @@ public class TempFarBlue extends OpMode{
     private DcMotor belt;
     private DcMotor elbow;
 
-    private final double OVERSHOOT_VEL_MULT = 1.68;
+    private final double OVERSHOOT_VEL_MULT = 1.665;
     private final double OVERSHOOT_ANG_MULT = 1;
     private final double ANGLE_CONST = 2.08833333;
     private final int ELBOW_GEAR_RATIO = 4;
@@ -77,7 +77,7 @@ public class TempFarBlue extends OpMode{
     private ElapsedTime feedTimer;
     private double feedDur = 450; // was 400
     private double retDur = 600; // was 1000
-    private double beltDur = 800; // was 500, 300
+    private double beltDur = 500; // was 800, 300
     private int feeding = 0;
     private int fcount = 0;
 
@@ -407,7 +407,7 @@ public class TempFarBlue extends OpMode{
             shootTimerCount = 1;
         }
         // Changed the multiplier to 6 instead of 8
-        if (shootTimer.milliseconds() < 11000 && fcount <= 10 && shootTimerCount == 1){
+        if (shootTimer.milliseconds() < 9000 && fcount <= 6 ){
             feedLauncher();
         }
         else if (shootTimerCount == 1)

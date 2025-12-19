@@ -19,6 +19,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+
+import org.firstinspires.ftc.teamcode.paths.CloseBluePaths;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
@@ -27,44 +29,63 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 public class TempCloseRed extends OpMode{
 
     // PEDROPATHING VARS
+    // These are variables that are neccesary for pedro pathing to work, you need these for the drive motors to work
 
     private Follower fol;
-
-    private Timer pathTimer, actionTimer, opmodeTimer; // Game timer
+    private CloseBluePaths paths;
     private int pathState; // Current path #
-    private int chainNum;
-    private int ballNum = 2;
-    private int shootPos = 1;
+
+    /** This is a function that lets us change the pathState which we use later in the code,
+     * You use this function like this */ // setPathState('NUMBER HERE')*/
+    /** Check line 215 for an example */
+
+    private void setPathState(int num){
+        pathState = num;
+        pathTimer.resetTimer();
+    }
+
+
+    // IGNORE THESE
+    private Timer pathTimer, opmodeTimer; // Game timer
+//    private int chainNum;
+//    private int ballNum = 2;
+//    private int shootPos = 1;
 
     // CAMERA VARS
-    private Limelight3A cam;
-    private VisionPortal visPort;
-    private AprilTagProcessor apTag;
-    private LLResultTypes.FiducialResult foundTag;
-    private boolean tagFound;
-    private final int GPP_ID = 21;
-    private final int PGP_ID = 22;
-    private final int PPG_ID = 23;
+    /*** WE ARENT USING THESE BECAUSE PEDRO IS MORE CONSISTENT
+     private Limelight3A cam;
+     private VisionPortal visPort;
+     private AprilTagProcessor apTag;
+     private LLResultTypes.FiducialResult foundTag;
+     private boolean tagFound;
+     private final int GPP_ID = 21;
+     private final int PGP_ID = 22;
+     private final int PPG_ID = 23;
+     */
 
 
-    // POSITIONS
+    // FIELD POSITIONS
+    /** Pretty self explanatory, use the visualizer to find the paths and positions you want your robot to follow
+     * USE CONTROL POINTS!!! */
 
-    private final Pose startPose = new Pose(28, 131, Math.toRadians(144)).mirror(); // STARTING POSITION was 23, 124 , 144
-    private final Pose preScorePose = new Pose(60, 104, Math.toRadians(145.5)).mirror(); // PRE-LOAD SCORING POSITION
+    private final Pose startPose = new Pose(28, 131, Math.toRadians(144)).mirror(); // STARTING POSITION was 23, 124, 144
+    private final Pose preScorePose = new Pose(60, 104, Math.toRadians(146)).mirror(); // PRE-LOAD SCORING POSITION
     private final Pose row1Line = new Pose(44.5, 84, Math.toRadians(0)).mirror(); // Position
     private final Pose row1Line1CP = new Pose(91,84).mirror(); // CONTROL POINT
-    private final Pose grabRow1 = new Pose(30, 84, Math.toRadians(0)).mirror(); // Position
-    private final Pose scoreRow1 = new Pose(61, 78, Math.toRadians(132)).mirror(); // Scoring
+    private final Pose row1Grab = new Pose(30, 84, Math.toRadians(0)).mirror(); // Position
+    private final Pose row1Score = new Pose(61, 78, Math.toRadians(132)).mirror(); // Scoring
     private final Pose row2Line = new Pose(47, 60, Math.toRadians(0)).mirror(); // Position
     private final Pose row2LineCP = new Pose(85, 60).mirror();
-    private final Pose grabRow2 = new Pose(30, 59.5, Math.toRadians(0)).mirror();
-    private final Pose scoreRow2 = new Pose(61, 78, Math.toRadians(132)).mirror();
+    private final Pose row2Grab = new Pose(30, 59.5, Math.toRadians(0)).mirror();
+    private final Pose row2Score = new Pose(61, 78, Math.toRadians(132)).mirror();
 
     private final Pose parkPose = new Pose(50, 72, Math.toRadians(132)).mirror(); // PARKING POSITION
 
 
 
     // MOTORS
+    /** Here we initialise all your extra motors and servos
+     * Your drive motors should be already set up due to your pedro tuning process */
     private DcMotorEx ls;
     private DcMotorEx rs;
     private DcMotor belt;
@@ -78,6 +99,8 @@ public class TempCloseRed extends OpMode{
 
 
     // SHOOTING VARS
+    /** IGNORE THIS FOR RIGHT NOW THIS IS SPECIFIC TO OUR ROBOT FOR ITS SHOOTING FUNCTIONS
+     * JUMP TO LINE 121 */
     private final double OVERSHOOT_VEL_MULT = 1.68; // was 1.68
     private final double OVERSHOOT_ANG_MULT = 1;
     private final double ANGLE_CONST = 2.08833333;
@@ -102,26 +125,36 @@ public class TempCloseRed extends OpMode{
     private double feedDur = 450; // was 400
     private double retDur = 600; // was 1000
     private double beltDur = 600; // was 500, 300
+    private ElapsedTime shootTimer;
+    private int shootTimerCount = -1;
     private int feeding = 0;
     private int fcount = 0;
 
+    private double fx = 10;
+    private double fy = 136.5;
+
+
 
     // PATH CHAINS
-    private PathChain pathPreScore, pathRow1Line, pathGrabRow1, pathScoreRow1, pathRow2Line, pathGrabRow2, pathScoreRow2, pathParkPose;
+    /** Here is where we initialize our path names, this makes writing the robot drive sequence part of the code to be alot simpler to read
+     * Use a simple naming method for simplicity
+     * For example if you have a pose named "preScore" then you simple add the word 'path' in front
+     * preScore -> pathPreScore || row1Line -> pathRow1Line
+     *
+     * */
+    private PathChain pathPreScore, pathRow1Line, pathRow1Grab, pathRow1Score, pathRow2Line, pathRow2Grab, pathRow2Score, pathParkPose;
 
-
-    // OTHER VARS
-    private ElapsedTime timer;
-    private double dur;
-
-    private ElapsedTime shootTimer;
-    private int shootTimerCount = -1;
 
     @Override
     public void init(){
         // HARDWARE INIT
+        /** Initialise your motors and servos like you normally would
+         * Make sure to intialize a new data type your 'Follower' and init your starting position
+         * Ours is named fol so we use the ''Constants.createFollower(hardwareMap)'' method
+         * Examples below */
         fol = Constants.createFollower(hardwareMap);
         fol.setStartingPose(startPose);
+
 
         ls = hardwareMap.get(DcMotorEx.class, "ls");
         rs = hardwareMap.get(DcMotorEx.class, "rs");
@@ -161,7 +194,6 @@ public class TempCloseRed extends OpMode{
 
         // TIMER INIT
 
-        timer = new ElapsedTime();
         shootTimer = new ElapsedTime();
         feedTimer = new ElapsedTime();
 
@@ -172,34 +204,25 @@ public class TempCloseRed extends OpMode{
         opmodeTimer.resetTimer();
 
 
-        // CAMERA INIT
-
-    /*    tagFound = false;
-
-        cam = hardwareMap.get(Limelight3A.class, "limelight");
-        cam.pipelineSwitch(0);
-
-        cam.start(); */
 
         // The magic begins
-        buildPaths(0);
+        /** Make sure to set your pathState to 0 or -1, whatever you want your path chain to start with */
+        buildPaths();
         setPathState(-1);
 
     }
 
     public void loop(){
+
+        // This runs your entire auto process in this function, very important
         fol.update();
         autonomousPathUpdate();
 
-        // This stores the ending position of the bot at the end of auto
-        Pose finalPose = fol.getPose();
 
-        // Not sure if this is in the right spot :skull:
-        // Its either inside the loop or outside but outside prolly wouldnt make sense
         updatePos();
     }
 
-    public void buildPaths(int obNum){
+    public void buildPaths(){
 
         pathPreScore = fol.pathBuilder()
                 .addPath(new BezierLine(startPose, preScorePose))
@@ -207,49 +230,42 @@ public class TempCloseRed extends OpMode{
                 .build();
 
         pathRow1Line = fol.pathBuilder()
-                .addPath(new BezierCurve(preScorePose, row1Line1CP, row1Line))
+                .addPath(new BezierLine(preScorePose, row1Line))
                 .setLinearHeadingInterpolation(preScorePose.getHeading(), row1Line.getHeading())
                 //.setTangentHeadingInterpolation()
                 .build();
 
-        pathGrabRow1 = fol.pathBuilder()
-                .addPath(new BezierLine(row1Line, grabRow1))
-                .setLinearHeadingInterpolation(row1Line.getHeading(), grabRow1.getHeading())
+        pathRow1Grab = fol.pathBuilder()
+                .addPath(new BezierLine(row1Line, row1Grab))
+                .setLinearHeadingInterpolation(row1Line.getHeading(), row1Grab.getHeading())
                 .build();
 
-        pathScoreRow1 = fol.pathBuilder()
-                .addPath(new BezierLine(grabRow1, scoreRow1))
-                .setLinearHeadingInterpolation(grabRow1.getHeading(), scoreRow1.getHeading())
+        pathRow1Score = fol.pathBuilder()
+                .addPath(new BezierLine(row1Grab, row1Score))
+                .setLinearHeadingInterpolation(row1Grab.getHeading(), row1Score.getHeading())
                 .build();
 
         pathRow2Line = fol.pathBuilder()
-                .addPath(new BezierLine(scoreRow1, row2Line))
-                .setLinearHeadingInterpolation(scoreRow1.getHeading(), row2Line.getHeading())
+                .addPath(new BezierLine(row1Score, row2Line))
+                .setLinearHeadingInterpolation(row1Score.getHeading(), row2Line.getHeading())
                 .build();
 
-        pathGrabRow2 = fol.pathBuilder()
-                .addPath(new BezierLine(row2Line, grabRow2))
-                .setLinearHeadingInterpolation(row2Line.getHeading(), grabRow2.getHeading())
+        pathRow2Grab = fol.pathBuilder()
+                .addPath(new BezierLine(row2Line, row2Grab))
+                .setLinearHeadingInterpolation(row2Line.getHeading(), row2Grab.getHeading())
                 .build();
 
-        pathScoreRow2 = fol.pathBuilder()
-                .addPath(new BezierLine(grabRow2, scoreRow2))
-                .setLinearHeadingInterpolation(grabRow2.getHeading(), scoreRow2.getHeading())
+        pathRow2Score = fol.pathBuilder()
+                .addPath(new BezierLine(row2Grab, row2Score))
+                .setLinearHeadingInterpolation(row2Grab.getHeading(), row2Score.getHeading())
                 .build();
 
         pathParkPose = fol.pathBuilder()
-                .addPath(new BezierLine(scoreRow2, parkPose))
-                .setLinearHeadingInterpolation(scoreRow2.getHeading(), parkPose.getHeading())
+                .addPath(new BezierLine(row2Score, parkPose))
+                .setLinearHeadingInterpolation(row2Score.getHeading(), parkPose.getHeading())
                 .build();
     }
 
-    // LEIFAGE THIS IS FOR YOU PLZ READ
-    // Bassically when the bot was moving to that pose to shoot it also
-    // When the bot reached the end of that one path it got stuck because your shoot function started immediatly after the path is complete because you had it checked by fol.isbusy
-    // This started the other motors which caused a tiny bit of a shift of the bots gravity along with the momentum the bot has from moving into its shooting pose
-    // This caused the jerking back and forth.
-    // The bot gets to its pose but then the Shoot function causes the bot to move even in the slightest way which would normally be fine but you have it running in the same state that pedropathing is constantly checking, updating, and repositioning the bot.
-    // I fixed the error by simply seperating the move and the shoot functions by adding some more cases
 
     public void autonomousPathUpdate(){
 
@@ -258,7 +274,7 @@ public class TempCloseRed extends OpMode{
             case -1:
                 if (!fol.isBusy()){
                     fol.followPath(pathPreScore);
-                    setShootPos(preScorePose.getX(), preScorePose.getY(), 9, 135);
+                    setShootPos(preScorePose.getX(), preScorePose.getY(), fx, fy);
                     runBelt(0);
                     setPathState(-2);
                 }
@@ -282,14 +298,14 @@ public class TempCloseRed extends OpMode{
             case 0:
                 if (!fol.isBusy() && pathState == 0) {
                     fol.followPath(pathRow1Line);
-                    setShootPos(preScorePose.getX(), preScorePose.getY(), 10, 136.5); // was 9 , 135
+                    setShootPos(preScorePose.getX(), preScorePose.getY(), fx, fy); // was 9 , 135
                     setPathState(1);
                 }
                 break;
 
             case 1:
                 if (!fol.isBusy()) {
-                    fol.followPath(pathGrabRow1);
+                    fol.followPath(pathRow1Grab);
                     fol.setMaxPower(.4);
                     runBelt(beltSpeed);
                     setPathState(2);
@@ -298,9 +314,9 @@ public class TempCloseRed extends OpMode{
 
             case 2:
                 if (!fol.isBusy()){
-                    fol.followPath(pathScoreRow1);
+                    fol.followPath(pathRow1Score);
                     fol.setMaxPower(1);
-                    setShootPos(scoreRow1.getX(), scoreRow1.getY(), 10, 136.6); // was 9 135
+                    setShootPos(row1Score.getX(), row1Score.getY(), fx, fy); // was 9 135
                     //runBelt(beltSpeed);
                     setPathState(3);
                 }
@@ -325,7 +341,7 @@ public class TempCloseRed extends OpMode{
                 if (!fol.isBusy() && pathState == 5){
                     fol.followPath(pathRow2Line);
                     runBelt(beltSpeed);
-                    setShootPos(scoreRow2.getX(), scoreRow2.getY(), 10, 136.5);
+                    setShootPos(row2Score.getX(), row2Score.getY(), fx, fy);
                     setPathState(6);
                 }
                 break;
@@ -333,7 +349,7 @@ public class TempCloseRed extends OpMode{
             case 6:
                 if (!fol.isBusy()) {
                     fol.setMaxPower(.25);
-                    fol.followPath(pathGrabRow2);
+                    fol.followPath(pathRow2Grab);
                     runBelt(beltSpeed);
                     //ballNum = 3;
                     setPathState(7);
@@ -343,8 +359,8 @@ public class TempCloseRed extends OpMode{
             case 7:
                 if (!fol.isBusy()){
                     fol.setMaxPower(1);
-                    fol.followPath(pathScoreRow2);
-                    setShootPos(scoreRow2.getX(), scoreRow2.getY(), 13, 138);
+                    fol.followPath(pathRow2Score);
+                    setShootPos(row2Score.getX(), row2Score.getY(), fx, fy);
                     runBelt(0);
                     setPathState(8);
                 }
@@ -377,14 +393,7 @@ public class TempCloseRed extends OpMode{
         }
     }
 
-    private void setChainNum(int num){
-        chainNum = num;
-    }
 
-    private void setPathState(int num){
-        pathState = num;
-        pathTimer.resetTimer();
-    }
 
     // This method sets the speed of the shooter motors and the angle of the shooting posit
     private void setShootPos(double ix, double iy, double fx, double fy){
@@ -505,16 +514,17 @@ public class TempCloseRed extends OpMode{
         fol.update();
 
         // Get the position of the robot
-        Pose currentPose = fol.getPose();
-
-        double currentX = currentPose.getX();
-        double currentY = currentPose.getY();
-
-        telemetry.addData("Current Path State", pathState);
-        telemetry.addData("X Position", "%.2f", currentX);
-        telemetry.addData("Y Position", "%.2f", currentY);
-        telemetry.addData("Right Launch Power", rs.getPower());
-        telemetry.addData("Left Launch Power", ls.getPower());
+//        Pose currentPose = fol.getPose();
+//
+//        double currentX = currentPose.getX();
+//        double currentY = currentPose.getY();
+//
+//        telemetry.addData("Current Path State", pathState);
+//        telemetry.addData("X Position", "%.2f", currentX);
+//        telemetry.addData("Y Position", "%.2f", currentY);
+//        telemetry.addData("Right Launch Power", rs.getPower());
+//        telemetry.addData("Left Launch Power", ls.getPower());
+        telemetry.addData("Pose", fol.getPose());
         telemetry.update();
     }
 }

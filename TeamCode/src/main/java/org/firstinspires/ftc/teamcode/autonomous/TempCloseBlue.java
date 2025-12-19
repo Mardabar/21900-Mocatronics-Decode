@@ -19,6 +19,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+
+import org.firstinspires.ftc.teamcode.paths.CloseBluePaths;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
@@ -30,6 +32,7 @@ public class TempCloseBlue extends OpMode{
     // These are variables that are neccesary for pedro pathing to work, you need these for the drive motors to work
 
     private Follower fol;
+    private CloseBluePaths paths;
     private int pathState; // Current path #
 
     /** This is a function that lets us change the pathState which we use later in the code,
@@ -98,7 +101,7 @@ public class TempCloseBlue extends OpMode{
     // SHOOTING VARS
     /** IGNORE THIS FOR RIGHT NOW THIS IS SPECIFIC TO OUR ROBOT FOR ITS SHOOTING FUNCTIONS
      * JUMP TO LINE 121 */
-    private final double OVERSHOOT_VEL_MULT = 1.68; // was 1.68
+    private final double OVERSHOOT_VEL_MULT = 1.665; // was 1.68
     private final double OVERSHOOT_ANG_MULT = 1;
     private final double ANGLE_CONST = 2.08833333;
     private final int ELBOW_GEAR_RATIO = 4;
@@ -152,6 +155,7 @@ public class TempCloseBlue extends OpMode{
         fol = Constants.createFollower(hardwareMap);
         fol.setStartingPose(startPose);
 
+
         ls = hardwareMap.get(DcMotorEx.class, "ls");
         rs = hardwareMap.get(DcMotorEx.class, "rs");
         belt = hardwareMap.get(DcMotor.class, "belt");
@@ -203,7 +207,7 @@ public class TempCloseBlue extends OpMode{
 
         // The magic begins
         /** Make sure to set your pathState to 0 or -1, whatever you want your path chain to start with */
-        buildPaths(0);
+        buildPaths();
         setPathState(-1);
 
     }
@@ -214,17 +218,11 @@ public class TempCloseBlue extends OpMode{
         fol.update();
         autonomousPathUpdate();
 
-        /** IGNORE TS */
-        // This stores the ending position of the bot at the end of auto
-        Pose finalPose = fol.getPose();
 
-        /** AND TS */
-        // Not sure if this is in the right spot :skull:
-        // Its either inside the loop or outside but outside prolly wouldnt make sense
         updatePos();
     }
 
-    public void buildPaths(int obNum){
+    public void buildPaths(){
 
         pathPreScore = fol.pathBuilder()
                 .addPath(new BezierLine(startPose, preScorePose))
@@ -268,13 +266,6 @@ public class TempCloseBlue extends OpMode{
                 .build();
     }
 
-    // LEIFAGE THIS IS FOR YOU PLZ READ
-    // Bassically when the bot was moving to that pose to shoot it also
-    // When the bot reached the end of that one path it got stuck because your shoot function started immediatly after the path is complete because you had it checked by fol.isbusy
-    // This started the other motors which caused a tiny bit of a shift of the bots gravity along with the momentum the bot has from moving into its shooting pose
-    // This caused the jerking back and forth.
-    // The bot gets to its pose but then the Shoot function causes the bot to move even in the slightest way which would normally be fine but you have it running in the same state that pedropathing is constantly checking, updating, and repositioning the bot.
-    // I fixed the error by simply seperating the move and the shoot functions by adding some more cases
 
     public void autonomousPathUpdate(){
 
@@ -523,16 +514,17 @@ public class TempCloseBlue extends OpMode{
         fol.update();
 
         // Get the position of the robot
-        Pose currentPose = fol.getPose();
-
-        double currentX = currentPose.getX();
-        double currentY = currentPose.getY();
-
-        telemetry.addData("Current Path State", pathState);
-        telemetry.addData("X Position", "%.2f", currentX);
-        telemetry.addData("Y Position", "%.2f", currentY);
-        telemetry.addData("Right Launch Power", rs.getPower());
-        telemetry.addData("Left Launch Power", ls.getPower());
+//        Pose currentPose = fol.getPose();
+//
+//        double currentX = currentPose.getX();
+//        double currentY = currentPose.getY();
+//
+//        telemetry.addData("Current Path State", pathState);
+//        telemetry.addData("X Position", "%.2f", currentX);
+//        telemetry.addData("Y Position", "%.2f", currentY);
+//        telemetry.addData("Right Launch Power", rs.getPower());
+//        telemetry.addData("Left Launch Power", ls.getPower());
+        telemetry.addData("Pose", fol.getPose());
         telemetry.update();
     }
 }
