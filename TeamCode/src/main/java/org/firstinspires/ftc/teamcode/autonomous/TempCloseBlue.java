@@ -69,17 +69,17 @@ public class TempCloseBlue extends OpMode{
      * USE CONTROL POINTS!!! */
 
     private final Pose startPose = new Pose(28, 131, Math.toRadians(144)); // STARTING POSITION was 23, 124, 144
-    private final Pose preScorePose = new Pose(60, 104, Math.toRadians(146)); // PRE-LOAD SCORING POSITION
-    private final Pose row1Line = new Pose(44.5, 84, Math.toRadians(0)); // Position
+    private final Pose preScorePose = new Pose(61, 104, Math.toRadians(146)); // PRE-LOAD SCORING POSITION
+    private final Pose row1Line = new Pose(50, 84, Math.toRadians(0)); // Position
     private final Pose row1Line1CP = new Pose(91,84); // CONTROL POINT
-    private final Pose row1Grab = new Pose(30, 84, Math.toRadians(0)); // Position
-    private final Pose row1Score = new Pose(61, 78, Math.toRadians(132)); // Scoring
-    private final Pose row2Line = new Pose(47, 60, Math.toRadians(0)); // Position
+    private final Pose row1Grab = new Pose(30, 84, Math.toRadians(0)); // Position or 86
+    private final Pose row1Score = new Pose(61, 79, Math.toRadians(133)); // Scoring
+    private final Pose row2Line = new Pose(51, 61.5, Math.toRadians(0)); // Position
     private final Pose row2LineCP = new Pose(85, 60);
-    private final Pose row2Grab = new Pose(30, 59.5, Math.toRadians(0));
-    private final Pose row2Score = new Pose(61, 78, Math.toRadians(132));
+    private final Pose row2Grab = new Pose(30, 61.5, Math.toRadians(0));
+    private final Pose row2Score = new Pose(61, 79, Math.toRadians(134));
 
-    private final Pose parkPose = new Pose(50, 72, Math.toRadians(132)); // PARKING POSITION
+    private final Pose parkPose = new Pose(50, 72, Math.toRadians(134)); // PARKING POSITION
 
 
 
@@ -350,6 +350,7 @@ public class TempCloseBlue extends OpMode{
                 if (!fol.isBusy()) {
                     fol.setMaxPower(.25);
                     fol.followPath(pathRow2Grab);
+                    setShootPos(row2Score.getX(), row2Score.getY(), fx, fy);
                     runBelt(beltSpeed);
                     //ballNum = 3;
                     setPathState(7);
@@ -360,7 +361,6 @@ public class TempCloseBlue extends OpMode{
                 if (!fol.isBusy()){
                     fol.setMaxPower(1);
                     fol.followPath(pathRow2Score);
-                    setShootPos(row2Score.getX(), row2Score.getY(), fx, fy);
                     runBelt(0);
                     setPathState(8);
                 }
@@ -374,7 +374,7 @@ public class TempCloseBlue extends OpMode{
 
             case 9:
                 if (shootTimerCount != 2)
-                    shoot();
+                    shoot3();
                 else {
                     shootTimerCount = -1;
                     setPathState(10);
@@ -460,7 +460,40 @@ public class TempCloseBlue extends OpMode{
             shootTimerCount = 1;
         }
         // Changed the multiplier to 2 because we are grabbing 2 balls instead of 3
-        if (shootTimer.milliseconds() < 13000 && fcount <= 6 && shootTimerCount == 1){
+        if (shootTimer.milliseconds() < 9000 && fcount <= 6 ){
+            feedLauncher();
+        }
+        else if (shootTimerCount == 1)
+            shootTimerCount = 2;
+
+        if (shootTimerCount == 2){
+            ls.setVelocity(0);
+            rs.setVelocity(0);
+            feeding = 2;
+            fcount = 0;
+            ascension.setPower(0);
+            runBelt(0);
+            blocker.setPosition(1);
+        }
+    }
+
+    private void shoot3(){
+        if (shootTimerCount == -1) {
+            shootTimer.reset();
+            shootTimerCount = 0;
+        }
+
+        if (shootTimer.milliseconds() < 1200 && shootTimerCount == 0){
+            ls.setVelocity(velToPow(shootVel));
+            rs.setVelocity(velToPow(shootVel));
+        }
+        else if (shootTimerCount == 0){
+            shootTimer.reset();
+            feedTimer.reset();
+            shootTimerCount = 1;
+        }
+        // Changed the multiplier to 2 because we are grabbing 2 balls instead of 3
+        if (shootTimer.milliseconds() < 12000 && fcount <= 9 ){
             feedLauncher();
         }
         else if (shootTimerCount == 1)
@@ -492,13 +525,13 @@ public class TempCloseBlue extends OpMode{
         else if (feedTimer.milliseconds() < retDur && feeding == 1){
             blocker.setPosition(1);
         }
-        else if (feedTimer.milliseconds() < beltDur && feeding == 2) {
+        else if (feedTimer.milliseconds() < beltDur  && feeding == 2) {
             blocker.setPosition(1);
             ascension.setPower(1);
-            runBelt(beltSpeed);
+            runBelt(-beltSpeed);
         }
         else {
-            if (ls.getVelocity() >= velToPow(shootVel) - 30 && rs.getVelocity() >= velToPow(shootVel) - 30) {
+            if (ls.getVelocity() >= velToPow(shootVel) - 20 && rs.getVelocity() >= velToPow(shootVel) - 20) {
                 if (feeding == 2)
                     feeding = 0;
                 else

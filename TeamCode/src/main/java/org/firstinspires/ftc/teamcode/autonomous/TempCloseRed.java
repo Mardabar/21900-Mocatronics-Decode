@@ -69,17 +69,17 @@ public class TempCloseRed extends OpMode{
      * USE CONTROL POINTS!!! */
 
     private final Pose startPose = new Pose(28, 131, Math.toRadians(144)).mirror(); // STARTING POSITION was 23, 124, 144
-    private final Pose preScorePose = new Pose(60, 104, Math.toRadians(146)).mirror(); // PRE-LOAD SCORING POSITION
-    private final Pose row1Line = new Pose(44.5, 84, Math.toRadians(0)).mirror(); // Position
+    private final Pose preScorePose = new Pose(61, 104, Math.toRadians(146)).mirror(); // PRE-LOAD SCORING POSITION
+    private final Pose row1Line = new Pose(50, 84, Math.toRadians(0)).mirror(); // Position
     private final Pose row1Line1CP = new Pose(91,84).mirror(); // CONTROL POINT
-    private final Pose row1Grab = new Pose(30, 84, Math.toRadians(0)).mirror(); // Position
-    private final Pose row1Score = new Pose(61, 78, Math.toRadians(132)).mirror(); // Scoring
-    private final Pose row2Line = new Pose(47, 60, Math.toRadians(0)).mirror(); // Position
+    private final Pose row1Grab = new Pose(30, 84, Math.toRadians(0)).mirror(); // Position or 86
+    private final Pose row1Score = new Pose(61, 79, Math.toRadians(133)).mirror(); // Scoring
+    private final Pose row2Line = new Pose(51, 61.5, Math.toRadians(0)).mirror(); // Position
     private final Pose row2LineCP = new Pose(85, 60).mirror();
-    private final Pose row2Grab = new Pose(30, 59.5, Math.toRadians(0)).mirror();
-    private final Pose row2Score = new Pose(61, 78, Math.toRadians(132)).mirror();
+    private final Pose row2Grab = new Pose(30, 61.5, Math.toRadians(0)).mirror();
+    private final Pose row2Score = new Pose(61, 79, Math.toRadians(134)).mirror();
 
-    private final Pose parkPose = new Pose(50, 72, Math.toRadians(132)).mirror(); // PARKING POSITION
+    private final Pose parkPose = new Pose(50, 72, Math.toRadians(134)).mirror(); // PARKING POSITION
 
 
 
@@ -101,7 +101,7 @@ public class TempCloseRed extends OpMode{
     // SHOOTING VARS
     /** IGNORE THIS FOR RIGHT NOW THIS IS SPECIFIC TO OUR ROBOT FOR ITS SHOOTING FUNCTIONS
      * JUMP TO LINE 121 */
-    private final double OVERSHOOT_VEL_MULT = 1.68; // was 1.68
+    private final double OVERSHOOT_VEL_MULT = 1.66; // was 1.68
     private final double OVERSHOOT_ANG_MULT = 1;
     private final double ANGLE_CONST = 2.08833333;
     private final int ELBOW_GEAR_RATIO = 4;
@@ -124,7 +124,7 @@ public class TempCloseRed extends OpMode{
     private ElapsedTime feedTimer;
     private double feedDur = 450; // was 400
     private double retDur = 600; // was 1000
-    private double beltDur = 600; // was 500, 300
+    private double beltDur = 500; // was 500, 300
     private ElapsedTime shootTimer;
     private int shootTimerCount = -1;
     private int feeding = 0;
@@ -350,6 +350,7 @@ public class TempCloseRed extends OpMode{
                 if (!fol.isBusy()) {
                     fol.setMaxPower(.25);
                     fol.followPath(pathRow2Grab);
+                    setShootPos(row2Score.getX(), row2Score.getY(), fx, fy);
                     runBelt(beltSpeed);
                     //ballNum = 3;
                     setPathState(7);
@@ -360,7 +361,6 @@ public class TempCloseRed extends OpMode{
                 if (!fol.isBusy()){
                     fol.setMaxPower(1);
                     fol.followPath(pathRow2Score);
-                    setShootPos(row2Score.getX(), row2Score.getY(), fx, fy);
                     runBelt(0);
                     setPathState(8);
                 }
@@ -374,7 +374,7 @@ public class TempCloseRed extends OpMode{
 
             case 9:
                 if (shootTimerCount != 2)
-                    shoot();
+                    shoot3();
                 else {
                     shootTimerCount = -1;
                     setPathState(10);
@@ -460,7 +460,40 @@ public class TempCloseRed extends OpMode{
             shootTimerCount = 1;
         }
         // Changed the multiplier to 2 because we are grabbing 2 balls instead of 3
-        if (shootTimer.milliseconds() < 13000 && fcount <= 6 && shootTimerCount == 1){
+        if (shootTimer.milliseconds() < 9000 && fcount <= 6 ){
+            feedLauncher();
+        }
+        else if (shootTimerCount == 1)
+            shootTimerCount = 2;
+
+        if (shootTimerCount == 2){
+            ls.setVelocity(0);
+            rs.setVelocity(0);
+            feeding = 2;
+            fcount = 0;
+            ascension.setPower(0);
+            runBelt(0);
+            blocker.setPosition(1);
+        }
+    }
+
+    private void shoot3(){
+        if (shootTimerCount == -1) {
+            shootTimer.reset();
+            shootTimerCount = 0;
+        }
+
+        if (shootTimer.milliseconds() < 1200 && shootTimerCount == 0){
+            ls.setVelocity(velToPow(shootVel));
+            rs.setVelocity(velToPow(shootVel));
+        }
+        else if (shootTimerCount == 0){
+            shootTimer.reset();
+            feedTimer.reset();
+            shootTimerCount = 1;
+        }
+        // Changed the multiplier to 2 because we are grabbing 2 balls instead of 3
+        if (shootTimer.milliseconds() < 12000 && fcount <= 9 ){
             feedLauncher();
         }
         else if (shootTimerCount == 1)
@@ -492,13 +525,13 @@ public class TempCloseRed extends OpMode{
         else if (feedTimer.milliseconds() < retDur && feeding == 1){
             blocker.setPosition(1);
         }
-        else if (feedTimer.milliseconds() < beltDur && feeding == 2) {
+        else if (feedTimer.milliseconds() < beltDur  && feeding == 2) {
             blocker.setPosition(1);
             ascension.setPower(1);
-            runBelt(beltSpeed);
+            runBelt(-beltSpeed);
         }
         else {
-            if (ls.getVelocity() >= velToPow(shootVel) - 30 && rs.getVelocity() >= velToPow(shootVel) - 30) {
+            if (ls.getVelocity() >= velToPow(shootVel) - 20 && rs.getVelocity() >= velToPow(shootVel) - 20) {
                 if (feeding == 2)
                     feeding = 0;
                 else
