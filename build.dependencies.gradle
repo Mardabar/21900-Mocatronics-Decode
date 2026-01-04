@@ -21,6 +21,7 @@ dependencies {
     implementation 'com.rowanmcalpin.nextftc:core:0.5.6-beta'
     implementation 'com.rowanmcalpin.nextftc:ftc:0.5.6-beta'
     implementation 'com.bylazar:fullpanels:1.0.7'
+    implementation 'com.pedropathing:ivy:0.0.1-SNAPSHOT'
     implementation 'com.acmerobotics.dashboard:dashboard:0.4.16'
 
     implementation 'androidx.appcompat:appcompat:1.7.1'

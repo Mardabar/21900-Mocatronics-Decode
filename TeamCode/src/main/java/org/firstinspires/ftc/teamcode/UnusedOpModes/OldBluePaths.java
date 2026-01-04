@@ -1,11 +1,11 @@
-package org.firstinspires.ftc.teamcode.paths;
+package org.firstinspires.ftc.teamcode.UnusedOpModes;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.paths.PathChain;
 
-public class CloseBluePaths {
+public class OldBluePaths {
 
     private Follower fol;
     public static final Pose startPose = new Pose(28, 131, Math.toRadians(144)); // STARTING POSITION was 23, 124, 144
@@ -22,7 +22,7 @@ public class CloseBluePaths {
     final Pose parkPose = new Pose(50, 72, Math.toRadians(132)); // PARKING POSITION
     public PathChain pathPreScore, pathRow1Line, pathRow1Grab, pathRow1Score, pathRow2Line, pathRow2Grab, pathRow2Score, pathParkPose;
 
-    public CloseBluePaths(Follower fol){
+    public OldBluePaths(Follower fol){
 
             pathPreScore = fol.pathBuilder()
                     .addPath(new BezierLine(startPose, preScorePose))

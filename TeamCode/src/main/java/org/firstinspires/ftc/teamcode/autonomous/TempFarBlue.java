@@ -36,18 +36,18 @@ public class TempFarBlue extends OpMode{
     // POSITIONS
 
     private final Pose Start = new Pose(56, 8.6, Math.toRadians(90)); // STARTING POSITION
-    private final Pose preScorePose = new Pose(60, 22, Math.toRadians(115)); // PRE-LOAD SCORING POSITION
+    private final Pose preScorePose = new Pose(60, 22, Math.toRadians(117)); // PRE-LOAD SCORING POSITION
     private final Pose row1Line = new Pose(45, 35.5, Math.toRadians(0)); // POSITION
     private final Pose row1Grab = new Pose(30, 35.5, Math.toRadians(0)); // POSITION
-    private final Pose row1Score = new Pose(60, 75, Math.toRadians(131)); // POSITION
-    private final Pose row1ScoreCP = new Pose(60, 34.4, Math.toRadians(131)); // CONTROL POINT
+    private final Pose row1Score = new Pose(60, 75, Math.toRadians(133)); // POSITION
+    private final Pose row1ScoreCP = new Pose(60, 34.4, Math.toRadians(133)); // CONTROL POINT
     private final Pose row2Line = new Pose(45, 60, Math.toRadians(0)); // POSITION
-    private final Pose row2Grab = new Pose(25, 60, Math.toRadians(0)); // POSITION
+    private final Pose row2Grab = new Pose(31, 60, Math.toRadians(0)); // POSITION
     private final Pose row2Score = new Pose(60, 75, Math.toRadians(139)); // POSITION
     private final Pose Grab3Set = new Pose(45, 84, Math.toRadians(0)); // POSITION
     private final Pose Grab3 = new Pose(31, 84, Math.toRadians(0)); // POSITION
     private final Pose Score3 = new Pose(60, 75, Math.toRadians(136)); // POSITION
-    private final Pose parkPose = new Pose(50, 65, Math.toRadians(139)); // PARKING POSITION
+    private final Pose parkPose = new Pose(101, 41, Math.toRadians(139)).mirror(); // PARKING POSITION
 
     // SHOOTING VARS
 
@@ -56,7 +56,7 @@ public class TempFarBlue extends OpMode{
     private DcMotor belt;
     private DcMotor elbow;
 
-    private final double OVERSHOOT_VEL_MULT = 1.665;
+    private final double OVERSHOOT_VEL_MULT = 1.66;
     private final double OVERSHOOT_ANG_MULT = 1;
     private final double ANGLE_CONST = 2.08833333;
     private final int ELBOW_GEAR_RATIO = 4;
@@ -73,11 +73,11 @@ public class TempFarBlue extends OpMode{
 
     private Servo blocker;
     private double openPos = 0.53;
-    private double feedPos = 0.02;
+    private double feedPos = 0.03;
     private ElapsedTime feedTimer;
     private double feedDur = 450; // was 400
     private double retDur = 600; // was 1000
-    private double beltDur = 500; // was 800, 300
+    private double beltDur = 800; // was 500, 300
     private int feeding = 0;
     private int fcount = 0;
 
@@ -172,8 +172,8 @@ public class TempFarBlue extends OpMode{
                 .build();
 
         pathRow1Score = fol.pathBuilder()
-                .addPath(new BezierCurve(row1Grab, row1ScoreCP, row1Score))
-                .setLinearHeadingInterpolation(row1Grab.getHeading(), row1Score.getHeading())
+                .addPath(new BezierLine(row1Grab, preScorePose))
+                .setLinearHeadingInterpolation(row1Grab.getHeading(), preScorePose.getHeading())
                 .build();
 
         pathRow2Line = fol.pathBuilder()
@@ -276,7 +276,7 @@ public class TempFarBlue extends OpMode{
                     shoot();
                 else {
                     shootTimerCount = -1;
-                    setPathState(3);
+                    setPathState(9);
                 }
                 break;
 
@@ -313,7 +313,7 @@ public class TempFarBlue extends OpMode{
 
             case 52:
                 if (shootTimerCount != 2)
-                    shoot3();
+                    shoot();
                 else {
                     shootTimerCount = -1;
                     setPathState(9);
@@ -330,6 +330,12 @@ public class TempFarBlue extends OpMode{
             case 10:
                 if (!fol.isBusy()) {
                     setPathState(-2);
+                }
+                break;
+
+            case 41:
+                if(!fol.isBusy()){
+                    break;
                 }
                 break;
         }
@@ -407,7 +413,7 @@ public class TempFarBlue extends OpMode{
             shootTimerCount = 1;
         }
         // Changed the multiplier to 6 instead of 8
-        if (shootTimer.milliseconds() < 9000 && fcount <= 6 ){
+        if (shootTimer.milliseconds() < 10000 && fcount <= 6 ){
             feedLauncher();
         }
         else if (shootTimerCount == 1)
@@ -423,8 +429,6 @@ public class TempFarBlue extends OpMode{
             blocker.setPosition(1);
         }
     }
-
-
 
     private void runBelt(double speed){
         belt.setPower(speed);
@@ -441,7 +445,7 @@ public class TempFarBlue extends OpMode{
         else if (feedTimer.milliseconds() < retDur && feeding == 1){
             blocker.setPosition(1);
         }
-        else if (feedTimer.milliseconds() < beltDur  && feeding == 2) {
+        else if (feedTimer.milliseconds() < beltDur && feeding == 2) {
             blocker.setPosition(1);
             ascension.setPower(1);
             runBelt(-beltSpeed);
@@ -457,42 +461,6 @@ public class TempFarBlue extends OpMode{
             feedTimer.reset();
         }
     }
-
-
-    // Cheeks naming here but uh just go w it
-    private void shoot3(){
-        if (shootTimerCount == -1) {
-            shootTimer.reset();
-            shootTimerCount = 0;
-        }
-
-        if (shootTimer.milliseconds() < 1200 && shootTimerCount == 0){
-            ls.setVelocity(velToPow(shootVel));
-            rs.setVelocity(velToPow(shootVel));
-        }
-        else if (shootTimerCount == 0){
-            shootTimer.reset();
-            feedTimer.reset();
-            shootTimerCount = 1;
-        }
-        // Changed the multiplier to 2 because we are grabbing 2 balls instead of 3
-        if (shootTimer.milliseconds() < 12000 && fcount <= 9 ){
-            feedLauncher();
-        }
-        else if (shootTimerCount == 1)
-            shootTimerCount = 2;
-
-        if (shootTimerCount == 2){
-            ls.setVelocity(0);
-            rs.setVelocity(0);
-            feeding = 2;
-            fcount = 0;
-            ascension.setPower(0);
-            runBelt(0);
-            blocker.setPosition(1);
-        }
-    }
-
 
     // Updates the pos to the station
     public void updatePos(){

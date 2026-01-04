@@ -86,6 +86,7 @@ public class ShootSubsystem {
     }
 
     public void setShootPos(double ix, double iy, double fx, double fy){
+
     /* dist is the total distance the ball will travel until it hits the ground
        It's divided by 40 to turn the field units into meters
        Then, it's multiplied by 1.3 because the ball will hit the goal first, so using

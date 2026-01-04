@@ -36,18 +36,18 @@ public class TempFarRed extends OpMode{
     // POSITIONS
 
     private final Pose Start = new Pose(56, 8.6, Math.toRadians(90)).mirror(); // STARTING POSITION
-    private final Pose preScorePose = new Pose(60, 22, Math.toRadians(115)).mirror(); // PRE-LOAD SCORING POSITION
+    private final Pose preScorePose = new Pose(60, 22, Math.toRadians(117)).mirror(); // PRE-LOAD SCORING POSITION
     private final Pose row1Line = new Pose(45, 35.5, Math.toRadians(0)).mirror(); // POSITION
     private final Pose row1Grab = new Pose(30, 35.5, Math.toRadians(0)).mirror(); // POSITION
-    private final Pose row1Score = new Pose(60, 75, Math.toRadians(131)).mirror(); // POSITION
-    private final Pose row1ScoreCP = new Pose(60, 34.4, Math.toRadians(131)).mirror(); // CONTROL POINT
+    private final Pose row1Score = new Pose(60, 75, Math.toRadians(133)).mirror(); // POSITION
+    private final Pose row1ScoreCP = new Pose(60, 34.4, Math.toRadians(133)).mirror(); // CONTROL POINT
     private final Pose row2Line = new Pose(45, 60, Math.toRadians(0)).mirror(); // POSITION
     private final Pose row2Grab = new Pose(31, 60, Math.toRadians(0)).mirror(); // POSITION
     private final Pose row2Score = new Pose(60, 75, Math.toRadians(139)).mirror(); // POSITION
     private final Pose Grab3Set = new Pose(45, 84, Math.toRadians(0)).mirror(); // POSITION
     private final Pose Grab3 = new Pose(31, 84, Math.toRadians(0)).mirror(); // POSITION
     private final Pose Score3 = new Pose(60, 75, Math.toRadians(136)).mirror(); // POSITION
-    private final Pose parkPose = new Pose(50, 65, Math.toRadians(139)).mirror(); // PARKING POSITION
+    private final Pose parkPose = new Pose(101, 41, Math.toRadians(139)); // PARKING POSITION
 
     // SHOOTING VARS
 
@@ -56,7 +56,7 @@ public class TempFarRed extends OpMode{
     private DcMotor belt;
     private DcMotor elbow;
 
-    private final double OVERSHOOT_VEL_MULT = 1.68;
+    private final double OVERSHOOT_VEL_MULT = 1.65;
     private final double OVERSHOOT_ANG_MULT = 1;
     private final double ANGLE_CONST = 2.08833333;
     private final int ELBOW_GEAR_RATIO = 4;
@@ -73,11 +73,11 @@ public class TempFarRed extends OpMode{
 
     private Servo blocker;
     private double openPos = 0.53;
-    private double feedPos = 0.02;
+    private double feedPos = 0.03;
     private ElapsedTime feedTimer;
     private double feedDur = 450; // was 400
     private double retDur = 600; // was 1000
-    private double beltDur = 800; // was 500, 300
+    private double beltDur = 500; // was 500, 300
     private int feeding = 0;
     private int fcount = 0;
 
@@ -172,8 +172,8 @@ public class TempFarRed extends OpMode{
                 .build();
 
         pathRow1Score = fol.pathBuilder()
-                .addPath(new BezierCurve(row1Grab, row1ScoreCP, row1Score))
-                .setLinearHeadingInterpolation(row1Grab.getHeading(), row1Score.getHeading())
+                .addPath(new BezierLine(row1Grab, preScorePose))
+                .setLinearHeadingInterpolation(row1Grab.getHeading(), preScorePose.getHeading())
                 .build();
 
         pathRow2Line = fol.pathBuilder()
@@ -276,7 +276,7 @@ public class TempFarRed extends OpMode{
                     shoot();
                 else {
                     shootTimerCount = -1;
-                    setPathState(3);
+                    setPathState(9);
                 }
                 break;
 
@@ -330,6 +330,12 @@ public class TempFarRed extends OpMode{
             case 10:
                 if (!fol.isBusy()) {
                     setPathState(-2);
+                }
+                break;
+
+            case 41:
+                if(!fol.isBusy()){
+                    break;
                 }
                 break;
         }

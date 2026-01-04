@@ -1,13 +1,10 @@
-package org.firstinspires.ftc.teamcode.autonomous;
+package org.firstinspires.ftc.teamcode.UnusedOpModes;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
-import com.qualcomm.hardware.limelightvision.LLResultTypes;
-import com.qualcomm.hardware.limelightvision.Limelight3A;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -19,20 +16,22 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import com.qualcomm.robotcore.hardware.DistanceSensor;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 
-import org.firstinspires.ftc.teamcode.paths.CloseBluePaths;
+
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-import org.firstinspires.ftc.vision.VisionPortal;
-import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
-@Autonomous(name = "CloseBlue", group = "autonomous")
+@Autonomous(name = "TempCloseBlue", group = "autonomous")
 public class TempCloseBlue extends OpMode{
 
     // PEDROPATHING VARS
     // These are variables that are neccesary for pedro pathing to work, you need these for the drive motors to work
 
     private Follower fol;
-    private CloseBluePaths paths;
+    private ColorSensor ap;
+    private DistanceSensor beans;
+    private OldBluePaths paths;
     private int pathState; // Current path #
 
     /** This is a function that lets us change the pathState which we use later in the code,
@@ -528,7 +527,7 @@ public class TempCloseBlue extends OpMode{
         else if (feedTimer.milliseconds() < beltDur  && feeding == 2) {
             blocker.setPosition(1);
             ascension.setPower(1);
-            runBelt(-beltSpeed);
+            runBelt(beltSpeed);
         }
         else {
             if (ls.getVelocity() >= velToPow(shootVel) - 20 && rs.getVelocity() >= velToPow(shootVel) - 20) {

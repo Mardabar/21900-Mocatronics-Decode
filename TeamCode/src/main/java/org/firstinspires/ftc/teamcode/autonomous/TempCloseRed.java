@@ -2,12 +2,9 @@ package org.firstinspires.ftc.teamcode.autonomous;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
-import com.qualcomm.hardware.limelightvision.LLResultTypes;
-import com.qualcomm.hardware.limelightvision.Limelight3A;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -20,10 +17,8 @@ import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigu
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 
-import org.firstinspires.ftc.teamcode.paths.CloseBluePaths;
+import org.firstinspires.ftc.teamcode.UnusedOpModes.OldBluePaths;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-import org.firstinspires.ftc.vision.VisionPortal;
-import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 @Autonomous(name = "CloseRed", group = "autonomous")
 public class TempCloseRed extends OpMode{
@@ -32,7 +27,7 @@ public class TempCloseRed extends OpMode{
     // These are variables that are neccesary for pedro pathing to work, you need these for the drive motors to work
 
     private Follower fol;
-    private CloseBluePaths paths;
+    private OldBluePaths paths;
     private int pathState; // Current path #
 
     /** This is a function that lets us change the pathState which we use later in the code,
@@ -69,14 +64,14 @@ public class TempCloseRed extends OpMode{
      * USE CONTROL POINTS!!! */
 
     private final Pose startPose = new Pose(28, 131, Math.toRadians(144)).mirror(); // STARTING POSITION was 23, 124, 144
-    private final Pose preScorePose = new Pose(61, 104, Math.toRadians(146)).mirror(); // PRE-LOAD SCORING POSITION
+    private final Pose preScorePose = new Pose(61, 104, Math.toRadians(145)).mirror(); // PRE-LOAD SCORING POSITION
     private final Pose row1Line = new Pose(50, 84, Math.toRadians(0)).mirror(); // Position
     private final Pose row1Line1CP = new Pose(91,84).mirror(); // CONTROL POINT
     private final Pose row1Grab = new Pose(30, 84, Math.toRadians(0)).mirror(); // Position or 86
-    private final Pose row1Score = new Pose(61, 79, Math.toRadians(133)).mirror(); // Scoring
+    private final Pose row1Score = new Pose(61, 79, Math.toRadians(134)).mirror(); // Scoring
     private final Pose row2Line = new Pose(51, 61.5, Math.toRadians(0)).mirror(); // Position
     private final Pose row2LineCP = new Pose(85, 60).mirror();
-    private final Pose row2Grab = new Pose(30, 61.5, Math.toRadians(0)).mirror();
+    private final Pose row2Grab = new Pose(32, 61.5, Math.toRadians(0)).mirror();
     private final Pose row2Score = new Pose(61, 79, Math.toRadians(134)).mirror();
 
     private final Pose parkPose = new Pose(50, 72, Math.toRadians(134)).mirror(); // PARKING POSITION
@@ -101,7 +96,7 @@ public class TempCloseRed extends OpMode{
     // SHOOTING VARS
     /** IGNORE THIS FOR RIGHT NOW THIS IS SPECIFIC TO OUR ROBOT FOR ITS SHOOTING FUNCTIONS
      * JUMP TO LINE 121 */
-    private final double OVERSHOOT_VEL_MULT = 1.66; // was 1.68
+    private final double OVERSHOOT_VEL_MULT = 1.64; // was 1.68
     private final double OVERSHOOT_ANG_MULT = 1;
     private final double ANGLE_CONST = 2.08833333;
     private final int ELBOW_GEAR_RATIO = 4;
@@ -122,7 +117,7 @@ public class TempCloseRed extends OpMode{
 
     // TIMER VARS
     private ElapsedTime feedTimer;
-    private double feedDur = 450; // was 400
+    private double feedDur = 600; // was 400
     private double retDur = 600; // was 1000
     private double beltDur = 500; // was 500, 300
     private ElapsedTime shootTimer;
@@ -374,7 +369,7 @@ public class TempCloseRed extends OpMode{
 
             case 9:
                 if (shootTimerCount != 2)
-                    shoot3();
+                    shoot();
                 else {
                     shootTimerCount = -1;
                     setPathState(10);
@@ -528,10 +523,10 @@ public class TempCloseRed extends OpMode{
         else if (feedTimer.milliseconds() < beltDur  && feeding == 2) {
             blocker.setPosition(1);
             ascension.setPower(1);
-            runBelt(-beltSpeed);
+            runBelt(beltSpeed);
         }
         else {
-            if (ls.getVelocity() >= velToPow(shootVel) - 20 && rs.getVelocity() >= velToPow(shootVel) - 20) {
+            if (ls.getVelocity() >= velToPow(shootVel) - 15 && rs.getVelocity() >= velToPow(shootVel) - 15) {
                 if (feeding == 2)
                     feeding = 0;
                 else
@@ -555,9 +550,9 @@ public class TempCloseRed extends OpMode{
 //        telemetry.addData("Current Path State", pathState);
 //        telemetry.addData("X Position", "%.2f", currentX);
 //        telemetry.addData("Y Position", "%.2f", currentY);
-//        telemetry.addData("Right Launch Power", rs.getPower());
-//        telemetry.addData("Left Launch Power", ls.getPower());
-        telemetry.addData("Pose", fol.getPose());
+        telemetry.addData("Right Launch Power", rs.getPower());
+        telemetry.addData("Left Launch Power", ls.getPower());
+        //telemetry.addData("Pose", fol.getPose());
         telemetry.update();
     }
 }
