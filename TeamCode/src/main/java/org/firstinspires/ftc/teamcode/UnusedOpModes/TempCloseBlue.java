@@ -1,15 +1,13 @@
-package org.firstinspires.ftc.teamcode.autonomous;
+package org.firstinspires.ftc.teamcode.UnusedOpModes;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
-import com.qualcomm.hardware.limelightvision.LLResultTypes;
-import com.qualcomm.hardware.limelightvision.Limelight3A;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -19,20 +17,23 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import com.qualcomm.robotcore.hardware.DistanceSensor;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 
-import org.firstinspires.ftc.teamcode.paths.CloseBluePaths;
+
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-import org.firstinspires.ftc.vision.VisionPortal;
-import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
-@Autonomous(name = "CloseRed", group = "autonomous")
-public class TempCloseRed extends OpMode{
+@Disabled
+@Autonomous(name = "TempCloseBlue", group = "autonomous")
+public class TempCloseBlue extends OpMode{
 
     // PEDROPATHING VARS
     // These are variables that are neccesary for pedro pathing to work, you need these for the drive motors to work
 
     private Follower fol;
-    private CloseBluePaths paths;
+    private ColorSensor ap;
+    private DistanceSensor beans;
+    private OldBluePaths paths;
     private int pathState; // Current path #
 
     /** This is a function that lets us change the pathState which we use later in the code,
@@ -53,14 +54,14 @@ public class TempCloseRed extends OpMode{
 
     // CAMERA VARS
     /*** WE ARENT USING THESE BECAUSE PEDRO IS MORE CONSISTENT
-     private Limelight3A cam;
-     private VisionPortal visPort;
-     private AprilTagProcessor apTag;
-     private LLResultTypes.FiducialResult foundTag;
-     private boolean tagFound;
-     private final int GPP_ID = 21;
-     private final int PGP_ID = 22;
-     private final int PPG_ID = 23;
+    private Limelight3A cam;
+    private VisionPortal visPort;
+    private AprilTagProcessor apTag;
+    private LLResultTypes.FiducialResult foundTag;
+    private boolean tagFound;
+    private final int GPP_ID = 21;
+    private final int PGP_ID = 22;
+    private final int PPG_ID = 23;
      */
 
 
@@ -68,18 +69,18 @@ public class TempCloseRed extends OpMode{
     /** Pretty self explanatory, use the visualizer to find the paths and positions you want your robot to follow
      * USE CONTROL POINTS!!! */
 
-    private final Pose startPose = new Pose(28, 131, Math.toRadians(144)).mirror(); // STARTING POSITION was 23, 124, 144
-    private final Pose preScorePose = new Pose(61, 104, Math.toRadians(146)).mirror(); // PRE-LOAD SCORING POSITION
-    private final Pose row1Line = new Pose(50, 84, Math.toRadians(0)).mirror(); // Position
-    private final Pose row1Line1CP = new Pose(91,84).mirror(); // CONTROL POINT
-    private final Pose row1Grab = new Pose(30, 84, Math.toRadians(0)).mirror(); // Position or 86
-    private final Pose row1Score = new Pose(61, 79, Math.toRadians(133)).mirror(); // Scoring
-    private final Pose row2Line = new Pose(51, 61.5, Math.toRadians(0)).mirror(); // Position
-    private final Pose row2LineCP = new Pose(85, 60).mirror();
-    private final Pose row2Grab = new Pose(30, 61.5, Math.toRadians(0)).mirror();
-    private final Pose row2Score = new Pose(61, 79, Math.toRadians(134)).mirror();
+    private final Pose startPose = new Pose(28, 131, Math.toRadians(144)); // STARTING POSITION was 23, 124, 144
+    private final Pose preScorePose = new Pose(61, 104, Math.toRadians(146)); // PRE-LOAD SCORING POSITION
+    private final Pose row1Line = new Pose(50, 84, Math.toRadians(0)); // Position
+    private final Pose row1Line1CP = new Pose(91,84); // CONTROL POINT
+    private final Pose row1Grab = new Pose(30, 84, Math.toRadians(0)); // Position or 86
+    private final Pose row1Score = new Pose(61, 79, Math.toRadians(133)); // Scoring
+    private final Pose row2Line = new Pose(51, 61.5, Math.toRadians(0)); // Position
+    private final Pose row2LineCP = new Pose(85, 60);
+    private final Pose row2Grab = new Pose(30, 61.5, Math.toRadians(0));
+    private final Pose row2Score = new Pose(61, 79, Math.toRadians(134));
 
-    private final Pose parkPose = new Pose(50, 72, Math.toRadians(134)).mirror(); // PARKING POSITION
+    private final Pose parkPose = new Pose(50, 72, Math.toRadians(134)); // PARKING POSITION
 
 
 
@@ -528,7 +529,7 @@ public class TempCloseRed extends OpMode{
         else if (feedTimer.milliseconds() < beltDur  && feeding == 2) {
             blocker.setPosition(1);
             ascension.setPower(1);
-            runBelt(-beltSpeed);
+            runBelt(beltSpeed);
         }
         else {
             if (ls.getVelocity() >= velToPow(shootVel) - 20 && rs.getVelocity() >= velToPow(shootVel) - 20) {

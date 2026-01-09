@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.paths;
 
-
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.geometry.BezierLine;
@@ -8,19 +7,38 @@ import com.pedropathing.paths.PathChain;
 
 public class CloseRedPaths {
 
-    private static final Pose startPose = new Pose(28, 131, Math.toRadians(144)).mirror(); // Starting Point was 23, 124 , 144
-    private final Pose preScorePose = new Pose(60, 105, Math.toRadians(146)).mirror(); // PRE-LOAD SCORING POSITION
-    private final Pose lineRow1 = new Pose(46.5, 84, Math.toRadians(0)).mirror(); // Position
-    private final Pose lineRow1CP = new Pose(91,84).mirror(); // Control Point
-    private final Pose grabRow1 = new Pose(30, 84, Math.toRadians(0)).mirror(); // Position
-    private final Pose scoreRow1 = new Pose(61, 78, Math.toRadians(132)).mirror(); // Scoring Position
-    private final Pose lineRow2 = new Pose(46.5, 60, Math.toRadians(0)).mirror(); // Position
-    private final Pose row2LineCP = new Pose(85, 60).mirror(); // Control Point
-    private final Pose grabRow2 = new Pose(30, 59.5, Math.toRadians(0)).mirror(); // Position
-    private final Pose scoreRow2 = new Pose(61, 78, Math.toRadians(132)).mirror(); // Scoring Position
-    private final Pose parkPose = new Pose(50, 72, Math.toRadians(132)).mirror(); // Parking Position
 
-    private PathChain pathPreScore, pathRow1Line, pathGrabRow1, pathScoreRow1, pathRow2Line, pathGrabRow2, pathScoreRow2, pathParkPose;
+    /// BOT WIDTH 15.375
+    /// BOT LENGTH 15.75
+
+    /// START POSE
+    public static final Pose startPose = new Pose(27.3, 132.7, Math.toRadians(143)).mirror();
+    final Pose preScorePose = new Pose(50, 115, Math.toRadians(143)).mirror();
+    final Pose row1Line = new Pose(48, 84, Math.toRadians(180)).mirror();
+    final Pose row1Grab = new Pose(23, 84, Math.toRadians(180)).mirror();
+    final Pose row1Score = new Pose(39.5, 102, Math.toRadians(135)).mirror();
+    final Pose row2Line = new Pose(48, 59.5, Math.toRadians(180)).mirror();
+    final Pose row2Grab = new Pose(23, 59.5, Math.toRadians(180)).mirror();
+    final Pose row2Score = new Pose(52, 88.5, Math.toRadians(135)).mirror();
+    final Pose row3Line = new Pose (48, 35.5, Math.toRadians(180)).mirror();
+    final Pose row3Grab = new Pose (20, 35.5, Math.toRadians(180)).mirror();
+
+    /// Row 3 score and park close
+    final Pose row3ScoreClose = new Pose (57.5, 84.3, Math.toRadians(134)).mirror();
+    final Pose row3ParkClose = new Pose (55, 63, Math.toRadians(134)).mirror();
+
+    /// Row 3 score and park far
+    final Pose row3ScoreFar = new Pose (58, 13.5, Math.toRadians(124)).mirror();
+    final Pose row3ParkFar = new Pose (55.5, 39, Math.toRadians(124)).mirror();
+
+
+    public PathChain pathPreScore, pathRow1Line, pathRow1Grab, pathRow1Score, pathRow2Line, pathRow2Grab, pathRow2Score, pathRow3Line, pathRow3Grab,  pathRow3Score, pathPark;
+
+
+
+
+
+
 
     public CloseRedPaths(Follower fol){
 
@@ -30,40 +48,85 @@ public class CloseRedPaths {
                 .build();
 
         pathRow1Line = fol.pathBuilder()
-                .addPath(new BezierLine(preScorePose, lineRow1))
-                .setLinearHeadingInterpolation(preScorePose.getHeading(), lineRow1.getHeading())
-                //.setTangentHeadingInterpolation()
+                .addPath(new BezierLine(preScorePose, row1Line))
+                .setLinearHeadingInterpolation(preScorePose.getHeading(), row1Line.getHeading())
                 .build();
 
-        pathGrabRow1 = fol.pathBuilder()
-                .addPath(new BezierLine(lineRow1, grabRow1))
-                .setConstantHeadingInterpolation(grabRow1.getHeading())
+        pathRow1Grab = fol.pathBuilder()
+                .addPath(new BezierLine(row1Line, row1Grab))
+                .setLinearHeadingInterpolation(row1Line.getHeading(), row1Grab.getHeading())
                 .build();
 
-        pathScoreRow1 = fol.pathBuilder()
-                .addPath(new BezierLine(grabRow1, scoreRow1))
-                .setLinearHeadingInterpolation(grabRow1.getHeading(), scoreRow1.getHeading())
+        pathRow1Score = fol.pathBuilder()
+                .addPath(new BezierLine(row1Grab, row1Score))
+                .setLinearHeadingInterpolation(row1Grab.getHeading(), row1Score.getHeading())
                 .build();
 
         pathRow2Line = fol.pathBuilder()
-                .addPath(new BezierLine(scoreRow1, lineRow2))
-                .setLinearHeadingInterpolation(scoreRow1.getHeading(), lineRow2.getHeading())
+                .addPath(new BezierLine(row1Score, row2Line))
+                .setLinearHeadingInterpolation(row1Score.getHeading(), row2Line.getHeading())
                 .build();
 
-        pathGrabRow2 = fol.pathBuilder()
-                .addPath(new BezierLine(lineRow2, grabRow2))
-                .setConstantHeadingInterpolation(grabRow2.getHeading())
+        pathRow2Grab = fol.pathBuilder()
+                .addPath(new BezierLine(row2Line, row2Grab))
+                .setLinearHeadingInterpolation(row2Line.getHeading(), row2Grab.getHeading())
                 .build();
 
-        pathScoreRow2 = fol.pathBuilder()
-                .addPath(new BezierLine(grabRow2, scoreRow2))
-                .setLinearHeadingInterpolation(grabRow2.getHeading(), scoreRow2.getHeading())
+        pathRow2Score = fol.pathBuilder()
+                .addPath(new BezierLine(row2Grab, row2Score))
+                .setLinearHeadingInterpolation(row2Grab.getHeading(), row2Score.getHeading())
                 .build();
 
-        pathParkPose = fol.pathBuilder()
-                .addPath(new BezierLine(scoreRow2, parkPose))
-                .setConstantHeadingInterpolation(parkPose.getHeading())
+        pathRow3Line = fol.pathBuilder()
+                .addPath(new BezierLine(row2Score, row3Line))
+                .setLinearHeadingInterpolation(row2Score.getHeading(), row3Line.getHeading())
                 .build();
+
+        pathRow3Grab = fol.pathBuilder()
+                .addPath(new BezierLine(row3Line, row3Grab))
+                .setLinearHeadingInterpolation(row3Line.getHeading(), row3Grab.getHeading())
+                .build();
+
+        //              Row 3 close score and shoot
+        pathRow3Score = fol.pathBuilder()
+                .addPath(new BezierLine(row3Grab, row3ScoreClose))
+                .setLinearHeadingInterpolation(row3Grab.getHeading(), row3ScoreClose.getHeading())
+                .build();
+
+        pathPark = fol.pathBuilder()
+                .addPath(new BezierLine(row3ScoreClose, row3ParkClose))
+                .setLinearHeadingInterpolation(row3ScoreClose.getHeading(), row3ParkClose.getHeading())
+                .build();
+
+        /*              Row 3 far score and shoot
+        pathRow3Score = fol.pathBuilder()
+                .addPath(new BezierLine(row3Grab, row3ScoreFar))
+                .setLinearHeadingInterpolation(row3Grab.getHeading(), row3ScoreFar.getHeading())
+                .build();
+
+        pathPark = fol.pathBuilder()
+                .addPath(new BezierLine(row3ScoreFar, row3ParkFar))
+                .setLinearHeadingInterpolation(row3ScoreFar.getHeading(), row3ParkFar.getHeading())
+                .build();  */
+
 
     }
+
+
 }
+
+
+/// Here for posibile code simplifying with multiple paths in one chain
+
+//        public PathChain pathPreScore, pathRow1, pathRow1Score, pathRow2Line, pathRow2Grab, pathRow2Score, pathRow3Line, pathRow3Grab;
+//    pathRow1 = fol.pathBuilder()
+//                    .addPath(new BezierLine(preScorePose, row1Line))
+//            .setLinearHeadingInterpolation(preScorePose.getHeading(), row1Line.getHeading())
+//            .addPath(new BezierLine(row1Line, row1Grab))
+//            .setLinearHeadingInterpolation(row1Line.getHeading(), row1Grab.getHeading())
+//            .build();
+//
+//    pathRow1Score = fol.pathBuilder()
+//                    .addPath(new BezierLine(row1Grab, row1Score))
+//            .setLinearHeadingInterpolation(row1Grab.getHeading(), row1Score.getHeading())
+//            .build();

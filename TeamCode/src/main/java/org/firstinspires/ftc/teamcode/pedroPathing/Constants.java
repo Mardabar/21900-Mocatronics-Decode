@@ -18,24 +18,21 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 @Configurable
 public class Constants {
     public static FollowerConstants followerConstants = new FollowerConstants()
-            .forwardZeroPowerAcceleration(-39.25)
-            .lateralZeroPowerAcceleration(-79.51)
-            .mass(9.07)
-//            .translationalPIDFCoefficients(new PIDFCoefficients(0.056, 0.0001, 0.005, 0))
-//            .headingPIDFCoefficients(new PIDFCoefficients(.8,0.01,0.001,0.01))
-//            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.004,0.000004,0.00008,0.6,0.0))
+            .forwardZeroPowerAcceleration(-47.521)
+            .lateralZeroPowerAcceleration(-75.435)
+            .mass(9.2)
+            .translationalPIDFCoefficients(new PIDFCoefficients(0.056, 0.0001, 0.005, 0))
+            .headingPIDFCoefficients(new PIDFCoefficients(.8,0.01,0.001,0.01))
+            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.004,0.000004,0.00008,0.6,0.0))
 
-            .translationalPIDFCoefficients(new PIDFCoefficients(0.056, 0.000, 0.005, 0.0))
-            .headingPIDFCoefficients(new PIDFCoefficients(1.2,0.0,0.001,0.01))
-            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.018,0.00000,0.00008,0.6,0.0)) // p = 0.03
             .centripetalScaling(0.0005);
 
 
     public static MecanumConstants driveConstants = new MecanumConstants()
             // Check issue with either wheels or wiring of motors because drive code is not working atm
             .maxPower(1)
-            .xVelocity(64.4630)
-            .yVelocity(52.4704)
+            .xVelocity(66.554)
+            .yVelocity(55.075)
 
             .rightFrontMotorName("rf")
             .rightRearMotorName("rb")
@@ -57,7 +54,7 @@ public class Constants {
     }
     public static PinpointConstants localizerConstants = new PinpointConstants()
             .forwardPodY(3.125) // 3.125   5.500
-            .strafePodX(-0.375) // 0.375  -3.700
+            .strafePodX(-5.25) // 0.375  -3.700
             .distanceUnit(DistanceUnit.INCH)
             .hardwareMapName("pinpoint")
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)

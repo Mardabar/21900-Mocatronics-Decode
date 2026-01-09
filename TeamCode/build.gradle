@@ -12,24 +12,30 @@
 // Custom definitions may go here
 
 buildscript {
+
     repositories {
         mavenCentral()
-        maven { url "https://repo.dairy.foundation/releases"}
+//        maven { url "https://repo.dairy.foundation/releases"}
         maven { url "https://jitpack.io" }
         maven { url "https://frcmaven.wpi.edu/artifactory/release"}
+
     }
-    dependencies {
-        classpath "dev.frozenmilk:Load:0.2.4"
-    }
+//    dependencies {
+//        classpath "dev.frozenmilk:Load:0.2.4"
+//
+//
+//    }
 }
+
 
 // Include common definitions from above.
 apply from: '../build.common.gradle'
 apply from: '../build.dependencies.gradle'
-apply plugin: 'dev.frozenmilk.sinister.sloth.load'
+//apply plugin: 'dev.frozenmilk.sinister.sloth.load'
 
 android {
     namespace = 'org.firstinspires.ftc.teamcode'
+
 
     compileSdk 35
     defaultConfig {
@@ -41,10 +47,10 @@ android {
     }
 }
 
-repositories {
-    maven { url = "https://repo.dairy.foundation/releases" }
-    maven { url = "https://jitpack.io" }
-}
+//repositories {
+//    maven { url = "https://repo.dairy.foundation/releases" }
+//    maven { url = "https://jitpack.io" }
+//}
 
 dependencies {
     implementation project(':FtcRobotController')
@@ -52,6 +58,7 @@ dependencies {
 
     implementation 'org.apache.commons:commons-math3:3.6.1'
     implementation 'org.ftclib.ftclib:core:2.1.1' // core
+
 
     implementation "org.solverslib:core:0.3.3" // add SolversLib core
     implementation "org.solverslib:pedroPathing:0.3.3" // pedroPathing
@@ -61,7 +68,7 @@ dependencies {
 
 
     implementation 'com.acmerobotics.roadrunner:core:1.0.1'
-    implementation "com.bylazar:fullpanels:1.0.9"
+    implementation "com.bylazar:fullpanels:1.0.11"
 
     implementation 'dev.nextftc:ftc:1.0.1'
 

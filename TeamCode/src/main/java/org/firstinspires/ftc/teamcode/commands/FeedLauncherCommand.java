@@ -14,6 +14,12 @@ public class FeedLauncherCommand extends CommandBase {
         addRequirements();
     }
 
+    @Override
+    public void execute(){
+        m_FeedLauncher.shoot();
+    }
+
+
 
 
 
