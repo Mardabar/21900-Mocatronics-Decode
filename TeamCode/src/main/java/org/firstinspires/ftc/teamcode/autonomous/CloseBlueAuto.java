@@ -68,13 +68,14 @@ public class CloseBlueAuto extends OpMode{
     private ShootSystem shooter;
 
 
-    private double flipperDelay = 2500;
+    private double shootDur = 5000;
+    private double flipperDelay = 3000;
 
 
 
     // Time
     private ElapsedTime shootTimer, blockTimer;
-    private double shootDur = 5000;
+
     private double blockDur = 2000;
 
     private int shootCount = -1;
@@ -388,21 +389,18 @@ public class CloseBlueAuto extends OpMode{
     private void shootBalls() {
         if (shootCount == -1) {
             shootTimer.reset();
+            blockTimer.reset();
+
             shootCount = 0;
         }
 
         double currentTime = shootTimer.milliseconds();
 
         if (currentTime < shootDur) {
-            // Run flywheel/belt (This still uses the internal velocity check for the belt)
             shooter.Shoot();
 
-            // MANUAL TIMER LOGIC
-            // The servo stays at closePos until currentTime hits your manual delay
-            if (currentTime > flipperDelay) {
+            if (blockTimer.milliseconds() < flipperDelay) {
                 feeder.setPosition(openPos);
-            } else {
-                feeder.setPosition(closePos);
             }
 
         } else {

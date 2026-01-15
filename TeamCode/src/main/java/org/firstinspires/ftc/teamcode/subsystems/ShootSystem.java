@@ -17,7 +17,7 @@ public class ShootSystem {
 
     private boolean isFeederUp = false;
 
-    private double anglePos = 0.5;
+    public double anglePos = 0.5;
     private final Telemetry telemetry;
     public Limelight3A cam;
 
@@ -31,7 +31,7 @@ public class ShootSystem {
 
     // CONSTANTS
 
-    private final double OVERSHOOT_VEL_MULT = 2.6;
+    private final double OVERSHOOT_VEL_MULT = 2.21;
     private final double OVERSHOOT_ANG_MULT = 1;
     private final double ANGLE_CONST = 2.08833333;
     private final int ELBOW_GEAR_RATIO = 28;
@@ -68,7 +68,7 @@ public class ShootSystem {
         angleAdjuster.scaleRange(0, 1);
 
         angleAdjuster.setPosition(0.15);
-        feeder.setPosition(openPos);
+//        feeder.setPosition(openPos);
 
         cam = hardwareMap.get(Limelight3A.class, "limelight");
         cam.pipelineSwitch(0);
@@ -123,7 +123,6 @@ public class ShootSystem {
 
         angleAdjuster.setPosition(anglePos);
 
-        telemetry.addData("Angle Manual Pos", anglePos);
     }
 
     // MAIN METHODS
@@ -190,4 +189,16 @@ public class ShootSystem {
     public double velToPow(double vel) {
         return (vel / (9.6 * Math.PI)) * 2800;
     }
+
+
+    public void FixedShoot(double flywheelPower) {
+        flywheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        flywheel.setPower(flywheelPower);
+        angleAdjuster.setPosition(anglePos);
+
+    }
+
+
+
+
 }

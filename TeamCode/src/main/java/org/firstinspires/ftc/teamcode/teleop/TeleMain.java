@@ -62,6 +62,7 @@ public class TeleMain extends LinearOpMode {
 
             if (gamepad2.a)
                 Shooting();
+
             else {
                 isShooting = false;
                 iSum = 0;

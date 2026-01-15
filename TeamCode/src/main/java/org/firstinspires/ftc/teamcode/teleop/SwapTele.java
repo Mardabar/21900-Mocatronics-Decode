@@ -1,25 +1,28 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
-import static org.firstinspires.ftc.teamcode.subsystems.ShootSystem.openPos;
 import static org.firstinspires.ftc.teamcode.subsystems.ShootSystem.closePos;
+import static org.firstinspires.ftc.teamcode.subsystems.ShootSystem.openPos;
 
-import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.subsystems.ShootSystem;
 
-@TeleOp(name = "SoloTele")
-public class SoloTele extends LinearOpMode {
+@TeleOp(name = "SwapTele")
+public class SwapTele extends LinearOpMode {
     private ShootSystem shooter;
     private boolean isShooting;
+
+    // Toggle Variables
+    private boolean isManualMode = false;
+    private boolean lastRightStick = false;
+
+    private double manualFlywheelPower = 0.5;
+    private double manualAnglePos = 0.25;
+
 
     private int shootMode = 1;
 
@@ -45,11 +48,6 @@ public class SoloTele extends LinearOpMode {
     private final double stickClampMin = 0.3;
     private final double stickClampMax = 1;
 
-    private double manualFlywheelPower = 0.5;
-    private double manualAnglePos = 0.25;
-
-
-
     @Override
     public void runOpMode(){
         InitMotors();
@@ -59,51 +57,81 @@ public class SoloTele extends LinearOpMode {
 
         waitForStart();
         while (opModeIsActive()){
+
+
+            boolean currentBackPress = gamepad2.back;
+
+            if (gamepad2.rightStickButtonWasPressed() && !lastRightStick) {
+                isManualMode = !isManualMode;
+            }
+            lastRightStick = gamepad2.rightStickButtonWasPressed();
+
             if (!isShooting || gamepad1.left_bumper)
                 Drive();
 
-            if (gamepad1.yWasPressed()){
+            if (gamepad2.y){
                 shooter.feeder.setPosition(closePos);
-            } else if (gamepad1.yWasReleased())
+            } else {
                 shooter.feeder.setPosition(openPos);
+            }
 
-            if (gamepad1.a)
-                Shooting();
-            else {
-                isShooting = false;
-                iSum = 0;
-                shooter.StopMotors();
+            if (isManualMode) {
 
-                if (gamepad1.x)
-                    shooter.RunBelt(1);
-                else if (gamepad1.b)
-                    shooter.RunBelt(-1);
-                else
-                    shooter.RunBelt(0);
+                // manual stick shi, minus makes it up for some reason
+                // again  ¯\_(ツ)_/¯
+                shooter.moveAngleManual(-gamepad2.left_stick_y);
+
+                if (gamepad2.a) {
+                    ManualShooting();
+                } else {
+                    isShooting = false;
+                    shooter.StopMotors();
+                }
+            } else {
+                if (gamepad2.a) {
+                    LimelightShooting();
+                } else {
+                    isShooting = false;
+                    shooter.StopMotors();
+                }
+            }
+
+
+            if (gamepad2.x) {
+                shooter.RunBelt(1);
+            } else if (gamepad2.b) {
+                shooter.RunBelt(-1);
+            } else if (!gamepad2.a || isManualMode) {
+                shooter.RunBelt(0);
+            }
+
+
+            if(gamepad2.dpadUpWasPressed()){
+            increaseLaunchPow();
+            }
+            if (gamepad2.dpadDownWasPressed()){
+
+                decreaseLaunchPow();
             }
 
 
 
-            // manual stick shi, minus makes it up for some reason
-            // again  ¯\_(ツ)_/¯
-            shooter.moveAngleManual(-gamepad2.left_stick_y);
 
 
 
 
+            telemetry.addData("Is manual mode :" ,isManualMode );
+            telemetry.addData("Flywheel power", shooter.flywheel.getPower());
+            telemetry.addData("Flywheel set speed", manualFlywheelPower);
+            telemetry.addData("Angle Manual Pos", shooter.anglePos);
 
+            telemetry.update();
         }
     }
 
-    private void Drive(){
-        ClampSpeed();
-        lb.setPower((rStickPosX * -driveSpeed) + (driveSpeed * gamepad1.left_stick_x) + (driveSpeed * gamepad1.left_stick_y));
-        rb.setPower((rStickPosX * driveSpeed) + (-driveSpeed * gamepad1.left_stick_x) + (driveSpeed * gamepad1.left_stick_y));
-        lf.setPower((rStickPosX * -driveSpeed) + (-driveSpeed * gamepad1.left_stick_x) + (driveSpeed * gamepad1.left_stick_y));
-        rf.setPower((rStickPosX * driveSpeed) + (driveSpeed * gamepad1.left_stick_x) + (driveSpeed * gamepad1.left_stick_y));
-    }
 
-    private void Shooting(){
+    // Uses Limelight logic
+    private void LimelightShooting(){
         isShooting = true;
         shooter.Shoot();
         for (LLResultTypes.FiducialResult res : shooter.GetImage().getFiducialResults()) {
@@ -113,11 +141,15 @@ public class SoloTele extends LinearOpMode {
         }
     }
 
+
+
     private void ManualShooting(){
         isShooting = true;
-        // Uses the simple motor power and fixed angle logic we wrote earlier
         shooter.FixedShoot(manualFlywheelPower);
     }
+
+
+
 
     private void PIDAdjusting(LLResultTypes.FiducialResult res){
         double error = res.getTargetXDegrees();
@@ -160,7 +192,6 @@ public class SoloTele extends LinearOpMode {
             lf.setDirection(DcMotorEx.Direction.REVERSE);
             rf.setDirection(DcMotorEx.Direction.FORWARD);
             return;
-
         }
 
         lb.setDirection(DcMotorEx.Direction.REVERSE);
@@ -176,9 +207,20 @@ public class SoloTele extends LinearOpMode {
         rf.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
+    private void Drive(){
+        ClampSpeed();
+        lb.setPower((rStickPosX * -driveSpeed) + (driveSpeed * gamepad1.left_stick_x) + (driveSpeed * gamepad1.left_stick_y));
+        rb.setPower((rStickPosX * driveSpeed) + (-driveSpeed * gamepad1.left_stick_x) + (driveSpeed * gamepad1.left_stick_y));
+        lf.setPower((rStickPosX * -driveSpeed) + (-driveSpeed * gamepad1.left_stick_x) + (driveSpeed * gamepad1.left_stick_y));
+        rf.setPower((rStickPosX * driveSpeed) + (driveSpeed * gamepad1.left_stick_x) + (driveSpeed * gamepad1.left_stick_y));
+    }
 
 
-
-
+    private void increaseLaunchPow(){
+        manualFlywheelPower+= .1;
+    }
+    private void decreaseLaunchPow(){
+        manualFlywheelPower-= .1;
+    }
 
 }
