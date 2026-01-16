@@ -15,16 +15,17 @@ buildscript {
 
     repositories {
         mavenCentral()
-        maven { url "https://repo.dairy.foundation/releases"}
+        //maven { url "https://repo.dairy.foundation/releases"}
         maven { url "https://jitpack.io" }
         maven { url "https://frcmaven.wpi.edu/artifactory/release"}
 
     }
 
 
-    dependencies {
-        classpath "dev.frozenmilk:Load:0.2.4"
-    }
+//    dependencies {
+//        classpath "dev.frozenmilk:Load:0.2.4"
+//
+//    }
 
 }
 
@@ -32,7 +33,8 @@ buildscript {
 // Include common definitions from above.
 apply from: '../build.common.gradle'
 apply from: '../build.dependencies.gradle'
-apply plugin: 'dev.frozenmilk.sinister.sloth.load'
+//apply plugin: 'dev.frozenmilk.sinister.sloth.load'
+
 
 android {
     namespace = 'org.firstinspires.ftc.teamcode'
@@ -49,9 +51,11 @@ android {
 }
 
 repositories {
-    maven { url = "https://repo.dairy.foundation/releases" }
+    //maven { url = "https://repo.dairy.foundation/releases" }
     maven { url = "https://jitpack.io" }
 }
+
+
 
 dependencies {
     implementation project(':FtcRobotController')
@@ -66,12 +70,14 @@ dependencies {
 
     implementation 'org.openftc:easyopencv:1.7.3'
     //implementation 'com.limelightvision:Limelight-FTC:3.1.0'
+    //implementation("com.acmerobotics.slothboard:dashboard:0.2.4+0.5.1")
 
 
-    implementation 'com.acmerobotics.roadrunner:core:1.0.1'
-    implementation "com.bylazar:fullpanels:1.0.11"
+
+//    implementation 'com.acmerobotics.roadrunner:core:1.0.1'
+    implementation "com.bylazar:fullpanels:1.0.12"
 
     implementation 'dev.nextftc:ftc:1.0.1'
 
-    implementation("dev.frozenmilk.sinister:Sloth:0.2.4")
+    //implementation("dev.frozenmilk.sinister:Sloth:0.2.4")
 }

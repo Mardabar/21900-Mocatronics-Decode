@@ -12,7 +12,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 
 
 @Configurable
-@Disabled
 @TeleOp
 public class PIDF_Arm extends OpMode {
 
