@@ -3,17 +3,20 @@ package org.firstinspires.ftc.teamcode.teleop;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.bylazar.configurables.annotations.Configurable;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
-@Configurable
+@Disabled
 @TeleOp(name = "FlyWheelShooter")
 public class FlyWheelShooter extends OpMode {
     public static double kP = 0.001;
     public static double kS = 0.02;
     public static double kV = 0.00043;
+
+
 
     private DcMotorEx cannon;
     private VoltageSensor battery;
@@ -23,6 +26,7 @@ public class FlyWheelShooter extends OpMode {
 
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         battery = hardwareMap.voltageSensor.iterator().next();
+        //battery = hardwareMap.get(VoltageSensor.class, "")
 
         cannon.setDirection(DcMotorEx.Direction.REVERSE);
     }
@@ -47,4 +51,5 @@ public class FlyWheelShooter extends OpMode {
 
         return (ff + fb) * (12.0 / currentVoltage);
     }
+
 }

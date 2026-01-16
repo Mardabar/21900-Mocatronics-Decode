@@ -37,6 +37,7 @@ public class Constants {
             .maxPower(1)
             .xVelocity(66.554)
             .yVelocity(55.075)
+            .useBrakeModeInTeleOp(true)
 
             .rightFrontMotorName("rf")
             .rightRearMotorName("rb")

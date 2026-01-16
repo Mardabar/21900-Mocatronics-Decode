@@ -15,17 +15,17 @@ buildscript {
 
     repositories {
         mavenCentral()
-        //maven { url "https://repo.dairy.foundation/releases"}
+        maven { url "https://repo.dairy.foundation/releases"}
         maven { url "https://jitpack.io" }
         maven { url "https://frcmaven.wpi.edu/artifactory/release"}
 
     }
 
 
-//    dependencies {
-//        classpath "dev.frozenmilk:Load:0.2.4"
-//
-//    }
+    dependencies {
+        classpath "dev.frozenmilk:Load:0.2.4"
+
+    }
 
 }
 
@@ -33,7 +33,7 @@ buildscript {
 // Include common definitions from above.
 apply from: '../build.common.gradle'
 apply from: '../build.dependencies.gradle'
-//apply plugin: 'dev.frozenmilk.sinister.sloth.load'
+apply plugin: 'dev.frozenmilk.sinister.sloth.load'
 
 
 android {
@@ -51,7 +51,7 @@ android {
 }
 
 repositories {
-    //maven { url = "https://repo.dairy.foundation/releases" }
+    maven { url = "https://repo.dairy.foundation/releases" }
     maven { url = "https://jitpack.io" }
 }
 
@@ -79,5 +79,5 @@ dependencies {
 
     implementation 'dev.nextftc:ftc:1.0.1'
 
-    //implementation("dev.frozenmilk.sinister:Sloth:0.2.4")
+    implementation("dev.frozenmilk.sinister:Sloth:0.2.4")
 }
