@@ -4,7 +4,6 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -16,50 +15,50 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public class FeedBackShootSystem {
 
-    private boolean isFeederUp = false;
 
+    // Feedback constants
     public static double kP = 0.001;
     public static double kS = 0.02;
     public static double kV = 0.00043;
 
+
+    // Hardware declaring
     private VoltageSensor battery;
 
-    public double anglePos = 0.5;
     private Telemetry telemetry;
     public Limelight3A cam;
 
     public DcMotorEx belt;
     public DcMotorEx flywheel;
-    private DcMotorEx turretMotor;
     public Servo angleAdjuster;
 
     public Servo feeder;
+
+    // Position declaring
+
     public static double openPos = .35;
-    public static double closePos = 0;
+    public double anglePos = 0.5;
 
     // CONSTANTS
 
-    private final double OVERSHOOT_VEL_MULT = 2.21;
-    private final double OVERSHOOT_ANG_MULT = 1;
-    private final double ANGLE_CONST = 2.08833333;
-    private final int ELBOW_GEAR_RATIO = 28;
-    private final double MAX_HEIGHT = 1.4;
+    public final double OVERSHOOT_VEL_MULT = 2.21;
+    public final double OVERSHOOT_ANG_MULT = 1;
 
-    private final double REST_POS = 0;
-    private final double FEED_POS = 0.2;
+    private final double MAX_HEIGHT = 1.4;
+    public static double IDLE_VELO = 800;
+
 
     // SHOOT VARS
 
-    private double shootAngle;
-    public static double shootVel;
+    public double shootAngle;
+    public double shootVel;
 
-    private boolean flipped;
 
     // INIT
 
     public FeedBackShootSystem(HardwareMap hardwareMap, Telemetry telemetry){
-        this.telemetry = telemetry;
 
+        this.telemetry = telemetry;
         belt = hardwareMap.get(DcMotorEx.class, "belt");
         flywheel = hardwareMap.get(DcMotorEx.class, "cannon");
         angleAdjuster = hardwareMap.get(Servo.class, "angleServo");
@@ -67,15 +66,11 @@ public class FeedBackShootSystem {
         battery = hardwareMap.voltageSensor.iterator().next();
 
 
-
-
-
         flywheel.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         flywheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         flywheel.setDirection(DcMotorEx.Direction.REVERSE);
 
         belt.setDirection(DcMotorEx.Direction.REVERSE);
-
         belt.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
 
 
@@ -83,34 +78,19 @@ public class FeedBackShootSystem {
         angleAdjuster.scaleRange(0, 1);
 
         angleAdjuster.setPosition(0.15);
-//        feeder.setPosition(openPos);
 
         cam = hardwareMap.get(Limelight3A.class, "limelight");
         cam.pipelineSwitch(0);
         cam.start();
 
-
-
     }
 
     // PUBLIC METHODS
 
-
-    // dont use rn
-
-    public LLResult GetImage(){
-        return cam.getLatestResult();
-    }
-
-    public void StopMotors(){
-        flywheel.setVelocity(0);
-        RunBelt(0);
-    }
-
-
     // Math that we did for the feedback and feedforward system
-    // Found alot of ts online and will probably have to tweak and change but the impl is there
+    // Found alot of ts online and from last years stuff but will probably have to tweak and change but the basis is there
     public void updateFlywheelControl(double targetTPS) {
+
         double currentTPS = flywheel.getVelocity();
         double currentVoltage = battery.getVoltage();
 
@@ -130,14 +110,15 @@ public class FeedBackShootSystem {
 
     // NEW SHOOT FUNCTION USING TUNED VALUES
     public void Shoot(){
+
+
+        //My dumbahh forgot to call the cam update func
         setShootAngle(shootAngle);
 
         UpdatePositions(cam.getLatestResult());
 
         // shootVel is the target speed
         updateFlywheelControl(shootVel);
-
-
 
     }
 
@@ -150,19 +131,20 @@ public class FeedBackShootSystem {
 
     // MAIN METHODS
 
-    private void UpdatePositions(LLResult pic){
-        for (LLResultTypes.FiducialResult res : pic.getFiducialResults())
-            CheckID(res, res.getFiducialId());
+    // Camera stuff
+
+    public void UpdatePositions(LLResult pic){
+        if (pic == null) return; // saftey measure here if the cam doesnt get a valid pic
+        for (LLResultTypes.FiducialResult res : pic.getFiducialResults()) {
+            int id = res.getFiducialId();
+            // Only updates if its one of the two april tag values
+            if (id == 20 || id == 24)
+                UpdateVars(res);
+
+        }
     }
 
-    private void CheckID(LLResultTypes.FiducialResult res, int id){
-        boolean idCheck = id == 20 || id == 24;
-        if (idCheck)
-            UpdateVars(res);
-    }
-
-    //
-    private void UpdateVars(LLResultTypes.FiducialResult res){
+    public void UpdateVars(LLResultTypes.FiducialResult res){
         double angle = 25.2 + res.getTargetYDegrees();
         double tagDist = (0.646 / Math.tan(Math.toRadians(angle))) + 0.2;
 
@@ -172,36 +154,61 @@ public class FeedBackShootSystem {
             tagDist += (tagDist - 2) * 0.6;
 
         setShootPos(tagDist);
+
+        // adds data about last snapshot cam took
+        telemetry.addData("Last Tag Dist", tagDist);
     }
 
 
     // NEW SET SHOOT POS METHOD
     // uses some of ts
     // got these methods from doing math and finding conversions of stuff
-    private void setShootPos(double dist){
+    public void setShootPos(double dist){
         dist *= 1.3;
         shootAngle = ((distToAngle(dist) * OVERSHOOT_ANG_MULT) - 45);
 
         // This should calc the velocity in m/s if the conversion is correct then apply the overshoot vel which we might not need anymore
         double rawVel = angleToVel(distToAngle(dist)) * OVERSHOOT_VEL_MULT;
 
+        // Converts velo to tps
+        double calculatedTPS = velToTPS(rawVel);
+
         // Converts m/s to ticks per second so then the control systems can understand it
-        // then sets motor power to that i think maybe
-        shootVel = velToTPS(rawVel);
+        // now checks between which value is higher and then will set to that power
+        shootVel = Math.max(rawVel, IDLE_VELO);
     }
 
 
-    // yea leif can mess w this
-    private void setShootAngle(double angle){
+    public void setShootAngle(double angle){
         angleAdjuster.setPosition(Math.clamp(angle / 300, 0, 1));
     }
 
-    public void RunBelt(double speed) {
-        belt.setPower(speed);
+
+    // method that should make the motor spin at all times at a low speed
+    // checks if there is a valid cam pic first
+    public void spinUpWhileDriving(){
+
+        LLResult result = cam.getLatestResult();
+
+        if (result != null && result.isValid()){
+            UpdatePositions(result);
+        } else {
+            // if no tag is seen then automatically sets power to the idle value
+            shootVel = IDLE_VELO;
+        }
+
+        // then just keeps that power constant
+        updateFlywheelControl(shootVel);
+        setShootAngle(shootAngle);
+
     }
 
+
+
     // CONVERSIONS
-    // keep these as the same, might give off too much power but thats ok
+
+    // keep these as the same, might give off too much power
+
 
     public double distToAngle(double dist){
         return Math.toDegrees(Math.atan(54.88 / (9.8 * dist)));
@@ -213,15 +220,22 @@ public class FeedBackShootSystem {
     }
 
     // This function translates velocity to motor power for 6000 RPM motors combined with 72 mm Gecko Wheels
-
     public double velToTPS(double vel) {
         return (vel / (9.6 * Math.PI)) * 2800;
     }
 
 
-    public void FixedShoot(double flywheelPower) {
-        flywheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        flywheel.setPower(flywheelPower);
-        angleAdjuster.setPosition(anglePos);
+    public void RunBelt(double speed) {
+        belt.setPower(speed);
     }
+
+    public void stopBelt(){
+        belt.setPower(0);
+    }
+
+    public void StopMotors(){
+        flywheel.setVelocity(0);
+        RunBelt(0);
+    }
+
 }

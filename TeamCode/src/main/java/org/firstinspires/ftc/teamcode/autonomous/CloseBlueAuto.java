@@ -12,15 +12,10 @@ import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
-//import org.firstinspires.ftc.teamcode.paths.CloseBluePaths;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.subsystems.FeedBackShootSystem;
 import org.firstinspires.ftc.teamcode.subsystems.ShootSystem;
 
 
@@ -55,17 +50,9 @@ public class CloseBlueAuto extends OpMode{
 
 
 
-    // MOTORS
-
-    DcMotorEx belt, cannon;
 
 
-    // SERVOS
-
-    Servo feeder;
-    Servo angleAdjuster;
-
-    private ShootSystem shooter;
+    private FeedBackShootSystem shooter;
 
 
     private double shootDur = 5000;
@@ -76,7 +63,6 @@ public class CloseBlueAuto extends OpMode{
     // Time
     private ElapsedTime shootTimer, blockTimer;
 
-    private double blockDur = 2000;
 
     private int shootCount = -1;
 
@@ -88,26 +74,14 @@ public class CloseBlueAuto extends OpMode{
         // Fol init
         //paths = new CloseBluePaths(fol);
 
-        shooter = new ShootSystem(hardwareMap, telemetry);
+        shooter = new FeedBackShootSystem(hardwareMap, telemetry);
 
         fol = Constants.createFollower(hardwareMap);
         fol.setStartingPose(startPose);
 
 
 
-        // Initialize new motors and servos here
-        cannon = hardwareMap.get(DcMotorEx.class, "cannon");
-        MotorConfigurationType configRs = cannon.getMotorType().clone();
-        configRs.setAchieveableMaxRPMFraction(1.0);
-        cannon.setMotorType(configRs);
-        cannon.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        cannon.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        belt = hardwareMap.get(DcMotorEx.class, "belt");
-        belt.setDirection(DcMotorSimple.Direction.REVERSE);
-
-
-        feeder = hardwareMap.get(Servo.class, "feeder");
 
 
 
@@ -124,7 +98,6 @@ public class CloseBlueAuto extends OpMode{
 
     public void loop(){
 
-
         // Pedro runs paths
         fol.update();
         autonomousPathUpdate();
@@ -132,7 +105,6 @@ public class CloseBlueAuto extends OpMode{
 
 
 
-    // Negative path state just means its in done with the scoring check phase and is currently shooting
     private void autonomousPathUpdate(){
         switch (pathState){
             // Bot moves from starting to prescore
@@ -145,34 +117,15 @@ public class CloseBlueAuto extends OpMode{
             // Bot will do a check if its not moving here
             case 1:
                 if (!fol.isBusy()){
+                    shootTimer.reset(); // put this here so timer resets for shoot func to do its thang
                     setPathState(-1);
                 } break;
 
-            // Bot will score here
+            // Bot will score here then move to next pathState
             case -1:
-                shootBalls();
-                if (shootCount == 2) {
-                    shootCount = -1;
-                    setPathState(2);
-                }
+                shoot(2);
                 break;
 
-                /*
-                *             case -2:
-                if (!fol.isBusy()){
-                    setPathState(-12);
-                }
-                break;
-
-            case -12:
-                if (shootTimerCount != 2)
-                    shoot();
-                else {
-                    shootTimerCount = -1;
-                    setPathState(0);
-                }
-                break;
-                * */
             // Bot lines to row 1
             case 2:
                 if (!fol.isBusy()){
@@ -183,9 +136,8 @@ public class CloseBlueAuto extends OpMode{
             // Bot moves and grabs row 1
             case 3:
                 if (!fol.isBusy()){
-                    ///  ADD INTAKE RUNNING HERE
                     fol.setMaxPower(.4);
-                    runbelt(1);
+                    shooter.RunBelt(.4);
                     fol.followPath(pathRow1Grab);
                     setPathState(4);
                 } break;
@@ -194,22 +146,21 @@ public class CloseBlueAuto extends OpMode{
             case 4:
                 if(!fol.isBusy()){
                     fol.followPath(pathRow1Score);
-                    stopBelt();
-                    setPathState(-52);
+                    shooter.stopBelt();
+                    //stopBelt();
+                    setPathState(-5);
                 } break;
 
-            // Bot checks if its not moving
             case -5:
                 if(!fol.isBusy()){
+                    shootTimer.reset();
                     setPathState(5);
                 } break;
 
-            // Bot does shooting here, need to add timer to check when the bot can move again
+            // Bot does shooting here
             case 5:
-                if(!fol.isBusy()){
-                    // Shoot function goes here with timer to make sure it will shoot for the time it needs
-                    setPathState(6);
-                } break;
+                shoot(6);
+                break;
 
             // Bot will go to line with row 2
             case 6:
@@ -223,14 +174,15 @@ public class CloseBlueAuto extends OpMode{
                 if(!fol.isBusy()){
                     fol.followPath(pathRow2Grab);
                     /// Intake system run here
-                    runbelt(1);
+                    shooter.RunBelt(.5);
                     setPathState(8);
                 } break;
 
             // Bot goes to scoring pos
             case 8:
-                if(!fol.isBusy() && pathState == 8){
-                    stopBelt();
+                if(!fol.isBusy()){
+                    //stop belt
+                    shooter.stopBelt();
                     fol.followPath(pathRow2Score);
                     setPathState(-8);
                 } break;
@@ -238,30 +190,26 @@ public class CloseBlueAuto extends OpMode{
                 // Bot does shooting here, need to add timer to check when the bot can move again
             case -8:
                 if(!fol.isBusy()){
-                    // Shoot function goes here with timer to make sure it will shoot for the time it needs
+                    shootTimer.reset();
                     setPathState(9);
                 } break;
 
-            // Bot will go to line with row 3
             case 9:
-                if(!fol.isBusy() && pathState == 9){
-                    fol.followPath(pathRow3Line);
-                    setPathState(10);
-                } break;
+                shoot(10);
+                break;
 
             // Bot grabs the balls in row 3
             case 10:
                 if(!fol.isBusy()){
                     fol.followPath(pathRow3Grab);
-                    /// Intake system run here
-                    runbelt(0.8);
-                    setPathState(11);
+                    ///  BOT WILL STOP HERE
+                    setPathState(111);
                 } break;
 
             // Bot goes to scoring pos
             case 11:
                 if(!fol.isBusy() && pathState == 11){
-                    stopBelt();
+                    // stop intake
                     fol.followPath(pathRow3Score);
                     setPathState(-11);
                 } break;
@@ -296,19 +244,6 @@ public class CloseBlueAuto extends OpMode{
     private void setPathState(int num){
         pathState = num;
     }
-
-
-    /// INTAKE FUNCTIONS
-    private void runbelt(double pow){
-        belt.setPower(pow);
-    }
-
-    private void stopBelt(){
-        belt.setPower(0);
-    }
-
-    /// feeder SERVO FUNCTIONS
-    // Will have to find specific positions
 
 
 
@@ -386,29 +321,32 @@ public class CloseBlueAuto extends OpMode{
     }
 
 
-    private void shootBalls() {
-        if (shootCount == -1) {
-            shootTimer.reset();
-            blockTimer.reset();
+    // call this method at a
+    private void shoot(int nextState) {
+        // updates and sets motors to power
+        shooter.Shoot();
 
-            shootCount = 0;
+        // starts a timer when we enter the state
+        if (shootTimer.milliseconds() < 500) {
+            // lets the flywheel spin up for a bit
+            shooter.stopBelt();
         }
 
-        double currentTime = shootTimer.milliseconds();
+        // after that checks if the flywheel is at the velocity or if we have spun for over 3 seconds
+        else if (Math.abs(shooter.shootVel - shooter.flywheel.getVelocity()) < 100 || shootTimer.milliseconds() > 3000) {
+            shooter.RunBelt(0.8);
+        }
 
-        if (currentTime < shootDur) {
-            shooter.Shoot();
-
-            if (blockTimer.milliseconds() < flipperDelay) {
-                feeder.setPosition(openPos);
-            }
-
-        } else {
-            // Stop everything after shootDur
+        // After 4 seconds stop everything and move to the next path state incase sum gets messed up
+        if (shootTimer.milliseconds() > 4000) {
             shooter.StopMotors();
-            feeder.setPosition(closePos);
-            shootCount = 2;
+            setPathState(nextState);
         }
     }
+
+
+
+
+
 }
 

@@ -4,14 +4,12 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.teleop.FlyWheelShooter;
 
 public class ShootSystem {
     private FlyWheelShooter fws;
@@ -75,7 +73,7 @@ public class ShootSystem {
         cam.pipelineSwitch(0);
         cam.start();
 
-        fws = new FlyWheelShooter();
+        fws = new FlyWheelShooter(hardwareMap, telemetry);
     }
 
     // PUBLIC METHODS

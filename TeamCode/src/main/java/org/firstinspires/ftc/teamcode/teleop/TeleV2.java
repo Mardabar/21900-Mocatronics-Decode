@@ -3,15 +3,11 @@ package org.firstinspires.ftc.teamcode.teleop;
 import static org.firstinspires.ftc.teamcode.subsystems.ShootSystem.closePos;
 import static org.firstinspires.ftc.teamcode.subsystems.ShootSystem.openPos;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
@@ -19,41 +15,37 @@ import org.firstinspires.ftc.teamcode.subsystems.FeedBackShootSystem;
 import org.firstinspires.ftc.teamcode.subsystems.ShootSystem;
 
 
-///  BLEUAFEHATGSWF why do we have so many op modeeasdssdsd
+///  BLEUAFEHATGSWF why do we have so many teleop modeeasdssdsd
 ///
 @Configurable
-@TeleOp(name = "FeedBack Strafer")
-public class FeedBackStrafer extends OpMode {
+@TeleOp(name = "Tele V2")
+public class TeleV2 extends OpMode {
 
 
-    // Calls new feedbakc shoot system thing
+    // Calls new feedbakc shoot system
     FeedBackShootSystem shooter;
-    private Servo angleAdjuster;
 
 
 
+
+    // Using pedros drive op for simplicity
     private Follower fol;
     private final Pose startingPose = new Pose(72, 72, Math.toRadians(0));
-    private double mainSpeed = 1;
+
 
 
     @Override
     public void init() {
         shooter = new FeedBackShootSystem(hardwareMap, telemetry);
 
+        // tele method i got from pedro
         fol = Constants.createFollower(hardwareMap);
-        fol.setStartingPose(startingPose == null ? new Pose() : startingPose);
+        fol.setStartingPose(startingPose);
         fol.update();
-
-
-
-
-
 
         fol.startTeleOpDrive();
 
 
-        // tele method i got from docs
 
 
     }
@@ -94,25 +86,14 @@ public class FeedBackStrafer extends OpMode {
             shooter.feeder.setPosition(openPos);
         }
 
-//        shooter.moveAngleManual(gamepad2.left_stick_y);
-
 
 
 
         // prints data
         telemetry.addData("Target TPS", ShootSystem.shootVel);
         telemetry.addData("Actual TPS", shooter.flywheel.getVelocity());
-
         //telemetry.addData("Bot Pose in space", shooter.cam.getLatestResult());
         telemetry.update();
 
-
-
-        // errrrrr drive code i have to throw tg very quick
-
     }
-
-
-
-
 }
