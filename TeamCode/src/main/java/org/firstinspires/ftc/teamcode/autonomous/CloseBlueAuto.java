@@ -114,17 +114,21 @@ public class CloseBlueAuto extends OpMode{
                     setPathState(1);
                 } break;
 
+
+
+
             // Bot will do a check if its not moving here
             case 1:
                 if (!fol.isBusy()){
-                    shootTimer.reset(); // put this here so timer resets for shoot func to do its thang
+                    shootTimer.reset();
                     setPathState(-1);
                 } break;
-
             // Bot will score here then move to next pathState
             case -1:
                 shoot(2);
                 break;
+
+
 
             // Bot lines to row 1
             case 2:
@@ -327,8 +331,8 @@ public class CloseBlueAuto extends OpMode{
         shooter.Shoot();
 
         // starts a timer when we enter the state
+        // lets the flywheel spin up for a bit might need to make bigger
         if (shootTimer.milliseconds() < 500) {
-            // lets the flywheel spin up for a bit
             shooter.stopBelt();
         }
 

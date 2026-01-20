@@ -16,14 +16,33 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 public class FeedBackShootSystem {
 
 
-    // Feedback constants
+    // Feedback constants and battery declaring
     public static double kP = 0.001;
     public static double kS = 0.02;
     public static double kV = 0.00043;
-
-
-    // Hardware declaring
     private VoltageSensor battery;
+
+    // Function that adjusts the flywheel motor power based on battery voltage and current motor velocity in ticks per second
+    public void updateFlywheelControl(double targetTPS) {
+
+        double currentTPS = flywheel.getVelocity();
+        double currentVoltage = battery.getVoltage();
+
+        // finds feedforward amount based off current velocity from flywheel
+        double ff = (kV * targetTPS) + (kS * Math.signum(targetTPS));
+
+        // error correction for if the flywheel overshoots or undershoots its target velocity
+        double error = targetTPS - currentTPS;
+        double fb = kP * error;
+
+        // voltage compensation for inconsistent battery
+        double power = (ff + fb) * (12.0 / currentVoltage);
+
+        // Sets power to a value in between 0-1
+        flywheel.setPower(Math.clamp(power, -1, 1));
+    }
+
+
 
     private Telemetry telemetry;
     public Limelight3A cam;
@@ -87,25 +106,10 @@ public class FeedBackShootSystem {
 
     // PUBLIC METHODS
 
-    // Math that we did for the feedback and feedforward system
-    // Found alot of ts online and from last years stuff but will probably have to tweak and change but the basis is there
-    public void updateFlywheelControl(double targetTPS) {
+    // Math that we did for the feedback and feedforward
 
-        double currentTPS = flywheel.getVelocity();
-        double currentVoltage = battery.getVoltage();
 
-        // finds feedforward amount
-        double ff = (kV * targetTPS) + (kS * Math.signum(targetTPS));
 
-        // error correction
-        double error = targetTPS - currentTPS;
-        double fb = kP * error;
-
-        // voltage compensation
-        double power = (ff + fb) * (12.0 / currentVoltage);
-
-        flywheel.setPower(Math.clamp(power, -1, 1));
-    }
 
 
     // NEW SHOOT FUNCTION USING TUNED VALUES
