@@ -119,7 +119,7 @@ public class FeedBackShootSystem {
         }
     }
 
-    private void UpdateVars(LLResultTypes.FiducialResult res){
+    private void UpdatePods(LLResultTypes.FiducialResult res){
         double tagDist = 0;
         if (res.getFiducialId() == 24)
             tagDist = Math.sqrt(Math.pow(redPos.getX() - fol.getPose().getX(), 2)
@@ -145,6 +145,21 @@ public class FeedBackShootSystem {
         }
 
         setShootPos(limeDist);
+    }
+
+    public void UpdateVars(LLResultTypes.FiducialResult res){
+        double angle = 25.2 + res.getTargetYDegrees();
+        double tagDist = (0.646 / Math.tan(Math.toRadians(angle))) + 0.2;
+
+        if (tagDist - 2 < 0)
+            tagDist += (tagDist - 2) * 0.8;
+        else
+            tagDist += (tagDist - 2) * 0.6;
+
+        setShootPos(tagDist);
+
+        // adds data about last snapshot cam took
+        telemetry.addData("Last Tag Dist", tagDist);
     }
 
     // NEW SET SHOOT POS METHOD

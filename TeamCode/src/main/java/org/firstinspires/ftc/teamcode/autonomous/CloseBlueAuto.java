@@ -140,7 +140,7 @@ public class CloseBlueAuto extends OpMode{
             // Bot moves and grabs row 1
             case 3:
                 if (!fol.isBusy()){
-                    fol.setMaxPower(.4);
+                    //fol.setMaxPower(.4);
                     shooter.RunBelt(.4);
                     fol.followPath(pathRow1Grab);
                     setPathState(4);
@@ -337,12 +337,12 @@ public class CloseBlueAuto extends OpMode{
         }
 
         // after that checks if the flywheel is at the velocity or if we have spun for over 3 seconds
-        else if (Math.abs(shooter.shootVel - shooter.flywheel.getVelocity()) < 100 || shootTimer.milliseconds() > 3000) {
+        else if (Math.abs(shooter.shootVel - shooter.flywheel.getVelocity()) < 500 || shootTimer.milliseconds() > 700) {
             shooter.RunBelt(0.8);
         }
 
         // After 4 seconds stop everything and move to the next path state incase sum gets messed up
-        if (shootTimer.milliseconds() > 4000) {
+        if (shootTimer.milliseconds() > 2250) {
             shooter.StopMotors();
             setPathState(nextState);
         }
