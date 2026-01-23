@@ -18,14 +18,14 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public class FeedBackShootSystem {
     // Feedback constants and battery declaring
-    public static double kP = 0.001;
+    public static double kP = 0.003; // was 0.001
     public static double kS = 0.02;
-    public static double kV = 0.00039;
+    public static double kV = 0.00045;  //  was 0.00039
     private VoltageSensor battery;
 
     private Follower fol;
-    private Pose redPos = new Pose(132, 135);
-    private Pose bluePos = new Pose(12, 135);
+    private final Pose redPos = new Pose(132, 135);
+    private final Pose bluePos = new Pose(12, 135);
 
     private Telemetry telemetry;
     public Limelight3A cam;
@@ -39,6 +39,7 @@ public class FeedBackShootSystem {
     // Position declaring
 
     public static double openPos = .35;
+    public static double closePos = 0;
     public double anglePos = 0.5;
 
     // CONSTANTS
@@ -47,7 +48,7 @@ public class FeedBackShootSystem {
     public final double OVERSHOOT_ANG_MULT = .8;
 
     private final double MAX_HEIGHT = 1.4;
-    public static double IDLE_VELO = 100;
+    public static double IDLE_VELO = 550;
 
 
     // SHOOT VARS
@@ -78,7 +79,7 @@ public class FeedBackShootSystem {
         angleAdjuster.setPosition(0.15);
 
         fol = Constants.createFollower(hardwareMap);
-        fol.setStartingPose(new Pose(56, 8));
+        fol.setStartingPose(new Pose(50, 115)); // was 56, 8
 
         cam = hardwareMap.get(Limelight3A.class, "limelight");
         cam.pipelineSwitch(0);
@@ -139,11 +140,13 @@ public class FeedBackShootSystem {
 
         if (Math.abs(tagDist - limeDist) <= 0.5) {
             setShootPos(tagDist);
-            telemetry.addData("Last Tag Dist", tagDist);
-            telemetry.update();
             return;
         }
 
+        telemetry.addData("Last Tag Dist", tagDist);
+        telemetry.addData("X:", fol.getPose().getX());
+        telemetry.addData("Y:", fol.getPose().getY());
+        telemetry.update();
         setShootPos(limeDist);
     }
 

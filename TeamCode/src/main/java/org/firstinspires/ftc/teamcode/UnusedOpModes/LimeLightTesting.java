@@ -15,7 +15,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import java.util.List;
 
 
-
+    @Disabled
     @TeleOp
     public class LimeLightTesting extends LinearOpMode {
         // CAMERA VARS

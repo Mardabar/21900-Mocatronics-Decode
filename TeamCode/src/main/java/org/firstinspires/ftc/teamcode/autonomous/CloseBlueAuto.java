@@ -24,7 +24,7 @@ public class CloseBlueAuto extends OpMode{
 
     /// PATHS
     private final Pose startPose = new Pose(27.3, 132.7, Math.toRadians(143));
-    private final Pose preScorePose = new Pose(50, 115, Math.toRadians(143));
+    private final Pose preScorePose = new Pose(50, 115, Math.toRadians(146));
     private final Pose row1Line = new Pose(48, 84, Math.toRadians(180));
     private final Pose row1Grab = new Pose(21, 84, Math.toRadians(180));
     private final Pose row1Score = new Pose(39.5, 102, Math.toRadians(135));
@@ -61,7 +61,7 @@ public class CloseBlueAuto extends OpMode{
 
 
     // Time
-    private ElapsedTime shootTimer, blockTimer;
+    private ElapsedTime shootTimer, beltTimer;
 
 
     private int shootCount = -1;
@@ -87,7 +87,7 @@ public class CloseBlueAuto extends OpMode{
 
 
         shootTimer = new ElapsedTime();
-        blockTimer = new ElapsedTime();
+        beltTimer = new ElapsedTime();
 
         // Pedro paths init
         buildPaths();
@@ -125,7 +125,7 @@ public class CloseBlueAuto extends OpMode{
                 } break;
             // Bot will score here then move to next pathState
             case -1:
-                shoot(2);
+                shoot(2); // change back to 2
                 break;
 
 
@@ -140,15 +140,23 @@ public class CloseBlueAuto extends OpMode{
             // Bot moves and grabs row 1
             case 3:
                 if (!fol.isBusy()){
-                    //fol.setMaxPower(.4);
-                    shooter.RunBelt(.4);
+                    fol.setMaxPower(.6);
+                    shooter.RunBelt(.3);
                     fol.followPath(pathRow1Grab);
-                    setPathState(4);
+                    beltTimer.reset();
+                    setPathState(4); // back to 4
                 } break;
 
             // Bot goes to score pos
             case 4:
+
+                if (beltTimer.milliseconds() < 1200) {
+                    shooter.RunBelt(0.4);
+                } else {
+                    shooter.stopBelt();
+                }
                 if(!fol.isBusy()){
+                    fol.setMaxPower(1);
                     fol.followPath(pathRow1Score);
                     shooter.stopBelt();
                     //stopBelt();
@@ -168,7 +176,7 @@ public class CloseBlueAuto extends OpMode{
 
             // Bot will go to line with row 2
             case 6:
-                if(!fol.isBusy() && pathState == 6){
+                if(!fol.isBusy()){
                     fol.followPath(pathRow2Line);
                     setPathState(7);
                 } break;
@@ -207,7 +215,7 @@ public class CloseBlueAuto extends OpMode{
                 if(!fol.isBusy()){
                     fol.followPath(pathRow3Grab);
                     ///  BOT WILL STOP HERE
-                    setPathState(111);
+                    setPathState(11);
                 } break;
 
             // Bot goes to scoring pos
@@ -330,7 +338,12 @@ public class CloseBlueAuto extends OpMode{
         // updates and sets motors to power
         shooter.Shoot();
 
-        // starts a timer when we enter the state
+        if (shootTimer.milliseconds() > 900) {
+            shooter.feeder.setPosition(FeedBackShootSystem.closePos);
+        } else {
+            shooter.feeder.setPosition(FeedBackShootSystem.openPos);
+        }
+
         // lets the flywheel spin up for a bit might need to make bigger
         if (shootTimer.milliseconds() < 500) {
             shooter.stopBelt();
@@ -339,11 +352,13 @@ public class CloseBlueAuto extends OpMode{
         // after that checks if the flywheel is at the velocity or if we have spun for over 3 seconds
         else if (Math.abs(shooter.shootVel - shooter.flywheel.getVelocity()) < 500 || shootTimer.milliseconds() > 700) {
             shooter.RunBelt(0.8);
+
         }
 
         // After 4 seconds stop everything and move to the next path state incase sum gets messed up
-        if (shootTimer.milliseconds() > 2250) {
+        if (shootTimer.milliseconds() > 1900) {
             shooter.StopMotors();
+            shooter.feeder.setPosition(FeedBackShootSystem.openPos);
             setPathState(nextState);
         }
     }
