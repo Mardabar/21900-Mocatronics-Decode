@@ -15,6 +15,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.FeedBackShootSystem;
 import org.firstinspires.ftc.teamcode.subsystems.ShootSystem;
 
@@ -26,16 +27,16 @@ public class CloseBlueAuto extends OpMode{
     private final Pose startPose = new Pose(27.3, 132.7, Math.toRadians(143));
     private final Pose preScorePose = new Pose(50, 115, Math.toRadians(146));
     private final Pose row1Line = new Pose(48, 84, Math.toRadians(180));
-    private final Pose row1Grab = new Pose(21, 84, Math.toRadians(180));
+    private final Pose row1Grab = new Pose(18.5, 84, Math.toRadians(180));
     private final Pose row1Score = new Pose(39.5, 102, Math.toRadians(135));
     private final Pose row2Line = new Pose(48, 59.5, Math.toRadians(180));
-    private final Pose row2Grab = new Pose(21, 59.5, Math.toRadians(180));
-    private final Pose row2Score = new Pose(52, 88.5, Math.toRadians(135));
+    private final Pose row2Grab = new Pose(18.5, 59.5, Math.toRadians(180));
+    private final Pose row2Score = new Pose(50, 93, Math.toRadians(135)); // was 52, 88.5, 135
     private final Pose row3Line = new Pose (48, 35.5, Math.toRadians(180));
-    private final Pose row3Grab = new Pose (20, 35.5, Math.toRadians(180));
+    private final Pose row3Grab = new Pose (18.5, 35.5, Math.toRadians(180));
 
     /// Row 3 score and park close
-    private final Pose row3ScoreClose = new Pose (57.5, 84.3, Math.toRadians(134));
+    private final Pose row3ScoreClose = new Pose (50, 93, Math.toRadians(134));
     private final Pose row3ParkClose = new Pose (55, 63, Math.toRadians(134));
 
     /// Row 3 score and park far
@@ -64,7 +65,7 @@ public class CloseBlueAuto extends OpMode{
     private ElapsedTime shootTimer, beltTimer;
 
 
-    private int shootCount = -1;
+
 
 
     @Override
@@ -140,8 +141,8 @@ public class CloseBlueAuto extends OpMode{
             // Bot moves and grabs row 1
             case 3:
                 if (!fol.isBusy()){
-                    fol.setMaxPower(.6);
-                    shooter.RunBelt(.3);
+                    fol.setMaxPower(.45);
+                    shooter.RunBelt(.4);
                     fol.followPath(pathRow1Grab);
                     beltTimer.reset();
                     setPathState(4); // back to 4
@@ -150,11 +151,10 @@ public class CloseBlueAuto extends OpMode{
             // Bot goes to score pos
             case 4:
 
-                if (beltTimer.milliseconds() < 1200) {
+                while (beltTimer.milliseconds() > 3000) {
                     shooter.RunBelt(0.4);
-                } else {
-                    shooter.stopBelt();
                 }
+
                 if(!fol.isBusy()){
                     fol.setMaxPower(1);
                     fol.followPath(pathRow1Score);
@@ -184,9 +184,9 @@ public class CloseBlueAuto extends OpMode{
             // Bot grabs the balls in row 2
             case 7:
                 if(!fol.isBusy()){
+                    fol.setMaxPower(.45);
                     fol.followPath(pathRow2Grab);
-                    /// Intake system run here
-                    shooter.RunBelt(.5);
+                    shooter.RunBelt(.45);
                     setPathState(8);
                 } break;
 
@@ -194,6 +194,7 @@ public class CloseBlueAuto extends OpMode{
             case 8:
                 if(!fol.isBusy()){
                     //stop belt
+                    fol.setMaxPower(1);
                     shooter.stopBelt();
                     fol.followPath(pathRow2Score);
                     setPathState(-8);
@@ -210,40 +211,51 @@ public class CloseBlueAuto extends OpMode{
                 shoot(10);
                 break;
 
-            // Bot grabs the balls in row 3
+
             case 10:
+                if (!fol.isBusy()){
+                    fol.followPath(pathRow3Line);
+                    setPathState(11);
+                }
+            // Bot grabs the balls in row 3
+            case 11:
                 if(!fol.isBusy()){
                     fol.followPath(pathRow3Grab);
-                    ///  BOT WILL STOP HERE
-                    setPathState(11);
-                } break;
-
-            // Bot goes to scoring pos
-            case 11:
-                if(!fol.isBusy() && pathState == 11){
-                    // stop intake
-                    fol.followPath(pathRow3Score);
-                    setPathState(-11);
-                } break;
-
-            // Bot checks for it to stop moving
-            case -11:
-                if(!fol.isBusy()){
+                    fol.setMaxPower(.45);
+                    shooter.RunBelt(.4);
+                    beltTimer.reset();
                     setPathState(12);
                 } break;
 
-                // Bot does shooting here, need to add timer to check when the bot can move again
+
+            // Bot goes to scoring pos
             case 12:
                 if(!fol.isBusy()){
-                    // Shoot function goes here with timer to make sure it will shoot for the time it needs
+                    fol.setMaxPower(1);
+                    shooter.stopBelt();
+                    //stopBelt();
+                    fol.followPath(pathRow3Score);
+                    setPathState(-12);
+                } break;
+
+            // Bot checks for it to stop moving
+            case -12:
+                if(!fol.isBusy()){
+                    shootTimer.reset();
                     setPathState(13);
                 } break;
 
-            // Bot goes to park
+                // Bot does shooting here, need to add timer to check when the bot can move again
             case 13:
                 if(!fol.isBusy()){
+                    shoot(14);
+                } break;
+
+            // Bot goes to park
+            case 14:
+                if(!fol.isBusy()){
                     fol.followPath(pathPark);
-                    setPathState(14);
+                    setPathState(15);
                 } break;
 
 
