@@ -25,15 +25,15 @@ public class CloseBlueAuto extends OpMode{
     private final Pose row1Line = new Pose(48, 84, Math.toRadians(180));
     private final Pose row1Grab = new Pose(17.5, 84, Math.toRadians(180));
     private final Pose row1Score = new Pose(39.5, 102, Math.toRadians(135));
-    private final Pose row2Line = new Pose(48, 60.5, Math.toRadians(180));
-    private final Pose row2Grab = new Pose(10, 60.5, Math.toRadians(180));
+    private final Pose row2Line = new Pose(48, 60, Math.toRadians(180));
+    private final Pose row2Grab = new Pose(12, 60, Math.toRadians(180));
     private final Pose row2Score = new Pose(50, 93, Math.toRadians(135)); // was 52, 88.5, 135
     private final Pose row2ScoreCP = new Pose(53, 58);
     private final Pose row3Line = new Pose (48, 36, Math.toRadians(180));
-    private final Pose row3Grab = new Pose (10, 36, Math.toRadians(180));
+    private final Pose row3Grab = new Pose (12, 36, Math.toRadians(180));
 
     /// Row 3 score and park close
-    private final Pose row3ScoreClose = new Pose (50, 93, Math.toRadians(134));
+    private final Pose row3ScoreClose = new Pose (48, 107, Math.toRadians(134));
     private final Pose row3ParkClose = new Pose (55, 63, Math.toRadians(134));
 
     /// Row 3 score and park far
@@ -129,8 +129,8 @@ public class CloseBlueAuto extends OpMode{
             // Bot moves and grabs row 1
             case 3:
                 if (!fol.isBusy()){
-                    fol.setMaxPower(1);
-                    shooter.RunBelt(.3);
+                    fol.setMaxPower(.65);
+                    shooter.RunBelt(.4);
                     fol.followPath(pathRow1Grab);
                     beltTimer.reset();
                     setPathState(4); // back to 4
@@ -140,7 +140,7 @@ public class CloseBlueAuto extends OpMode{
             case 4:
 
                 while (beltTimer.milliseconds() > 3000) {
-                    shooter.RunBelt(0.3);
+                    shooter.RunBelt(0.5);
                 }
 
                 if(!fol.isBusy()){
@@ -172,9 +172,9 @@ public class CloseBlueAuto extends OpMode{
             // Bot grabs the balls in row 2
             case 7:
                 if(!fol.isBusy()){
-                    fol.setMaxPower(1);
+                    fol.setMaxPower(.65);
                     fol.followPath(pathRow2Grab);
-                    shooter.RunBelt(.3);
+                    shooter.RunBelt(.4);
                     setPathState(8);
                 } break;
 
@@ -209,8 +209,8 @@ public class CloseBlueAuto extends OpMode{
             case 11:
                 if(!fol.isBusy()){
                     fol.followPath(pathRow3Grab);
-                    fol.setMaxPower(1);
-                    shooter.RunBelt(.3);
+                    fol.setMaxPower(.65);
+                    shooter.RunBelt(.4);
                     beltTimer.reset();
                     setPathState(12);
                 } break;

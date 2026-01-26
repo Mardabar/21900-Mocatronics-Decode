@@ -74,7 +74,7 @@ public class TeleMain extends LinearOpMode {
             else
                 shooter.RunBelt(0);
 
-            shooter.spinUpWhileDriving();
+            //shooter.spinUpWhileDriving();
         }
     }
 

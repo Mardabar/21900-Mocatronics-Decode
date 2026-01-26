@@ -74,7 +74,7 @@ public class SoloTele extends LinearOpMode {
             else
                 shooter.RunBelt(0);
 
-            shooter.spinUpWhileDriving();
+            //shooter.spinUpWhileDriving();
         }
     }
 

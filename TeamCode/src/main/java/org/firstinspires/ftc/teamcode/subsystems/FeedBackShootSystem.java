@@ -18,7 +18,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public class FeedBackShootSystem {
     // Feedback constants and battery declaring
-    public static double kP = 0.003; // was 0.001
+    public static double kP = 0.004; // was 0.003
     public static double kS = 0.02;
     public static double kV = 0.00045;  //  was 0.00039
     private VoltageSensor battery;
@@ -45,10 +45,10 @@ public class FeedBackShootSystem {
     // CONSTANTS
 
     public final double OVERSHOOT_VEL_MULT = 2.21;
-    public final double OVERSHOOT_ANG_MULT = .5; // was .8
+    public final double OVERSHOOT_ANG_MULT = 1; // was .8
 
     private final double MAX_HEIGHT = 1.4;
-    public static double IDLE_VELO = 550;
+    public static double IDLE_VELO = 300;
 
 
     // SHOOT VARS
@@ -89,6 +89,8 @@ public class FeedBackShootSystem {
     // PUBLIC METHODS
 
     public void Shoot(){
+        LLResult result = cam.getLatestResult();
+
         UpdatePositions(cam.getLatestResult());
         updateFlywheelControl(shootVel);
         setShootAngle(shootAngle);
@@ -217,7 +219,8 @@ public class FeedBackShootSystem {
         double power = (ff + fb) * (12.0 / currentVoltage);
 
         // Sets power to a value in between 0-1
-        flywheel.setPower(Math.clamp(power, -1, 1));
+        flywheel.setPower(power);
+        //flywheel.setPower(Math.clamp(power, -1, 1));
     }
 
     // CONVERSIONS
