@@ -64,6 +64,7 @@ public class FeedBackShootSystem {
     public double shootAngle;
     public double shootVel;
 
+    public double beltSpeed = 1;
     private enum IntakeState{WAITING, FEED, RECOVER}
     private IntakeState intakeState = IntakeState.WAITING;
     private final double intakeDur = 250;
@@ -82,7 +83,7 @@ public class FeedBackShootSystem {
         battery = hardwareMap.voltageSensor.iterator().next();
 
         flywheel.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-        flywheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        flywheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         flywheel.setDirection(DcMotorEx.Direction.REVERSE);
 
         belt.setDirection(DcMotorEx.Direction.REVERSE);
@@ -130,35 +131,23 @@ public class FeedBackShootSystem {
             UpdatePositions(result);
         } else {
             anglePos = .015;
-
         }
 
         updateFlywheelControl(shootVel);
-        //setShootPos(shootAngle);
-
-
         angleAdjuster.setPosition(anglePos);
-
         fol.update();
     }
 
     public void ShootFar(){
         LLResult result = cam.getLatestResult();
 
-        if (result != null && result.isValid()){
+        if (result != null && result.isValid())
             UpdatePositions(result);
-        } else {
-            anglePos = .015;
-
-        }
+        else
+            anglePos = 0.015;
 
         updateFlywheelControl(shootVel);
-
-        double currentVelo = flywheel.getVelocity();
-
-
         angleAdjuster.setPosition(anglePos);
-
         fol.update();
     }
 
@@ -218,7 +207,7 @@ public class FeedBackShootSystem {
         if (highKey == null && lowKey == null)
             return 0.15;
 
-        if ( lowKey == null)
+        if (lowKey == null)
             return distanceToPos.get(highKey);
 
         if (highKey == null)
@@ -235,30 +224,18 @@ public class FeedBackShootSystem {
         return lowVal + t * (highVal - lowVal);
     }
 
-    
     private void updateVars(LLResultTypes.FiducialResult res){
-        double tagDist = 0;
-
-        /*if (res.getFiducialId() == 24)
-            tagDist = Math.sqrt(Math.pow(redPos.getX() - fol.getPose().getX(), 2)
-                    + Math.pow(redPos.getY() - fol.getPose().getY(), 2));
-        else if (res.getFiducialId() == 20)
-            tagDist = Math.sqrt(Math.pow(bluePos.getX() - fol.getPose().getX(), 2)
-                    + Math.pow(bluePos.getY() - fol.getPose().getY(), 2));
-        tagDist *= 0.0254; */
-
         double angle = 25.2 + res.getTargetYDegrees();
         double limeDist = (0.646 / Math.tan(Math.toRadians(angle))) + 0.2;
 
-
-        if (Math.abs(tagDist - limeDist) <= 0.5){
-            setShootPos(tagDist);
-            return;
-        }
+        if (limeDist > 2.6)
+            beltSpeed = 0.4;
+        else
+            beltSpeed = 0.8;
 
         setShootPos(limeDist);
 
-        telemetry.addData("Cam Dist", tagDist);
+        telemetry.addData("Cam Dist", limeDist);
         telemetry.update();
     }
 

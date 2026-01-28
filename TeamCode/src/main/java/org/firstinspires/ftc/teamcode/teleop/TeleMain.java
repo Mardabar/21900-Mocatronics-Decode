@@ -7,7 +7,6 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.teamcode.subsystems.FeedBackShootSystem;
@@ -15,7 +14,7 @@ import org.firstinspires.ftc.teamcode.subsystems.FeedBackShootSystem;
 @TeleOp(name = "TeleMain")
 public class TeleMain extends LinearOpMode {
     private FeedBackShootSystem shooter;
-    private boolean isShooting;
+    private boolean isDriving = true;
 
     // Drive Vars
 
@@ -52,8 +51,12 @@ public class TeleMain extends LinearOpMode {
     }
 
     private void Running(){
-        if (!isShooting || gamepad1.left_bumper)
-            Drive();
+        Drive();
+
+        if (lStickPosX + lStickPosY + rStickPosX > 0.1) {
+            isDriving = true;
+        } else if (isDriving)
+            isDriving = false;
 
         if (gamepad2.dpadUpWasPressed()){
             shooter.feeder.setPosition(closePos);
@@ -63,19 +66,18 @@ public class TeleMain extends LinearOpMode {
         if (gamepad2.a)
             Shooting();
         else if (gamepad2.aWasReleased()) {
-            isShooting = false;
             iSum = 0;
+            SetDriveDirection("forward");
+            shooter.beltSpeed = 0.8;
             shooter.StopMotors();
-        } else {
-            if (gamepad2.right_bumper)
-                shooter.RunBelt(1);
-            else if (gamepad2.left_bumper)
-                shooter.RunBelt(-1);
-            else
-                shooter.RunBelt(0);
-
-            //shooter.spinUpWhileDriving();
         }
+
+        if (gamepad2.right_bumper)
+            shooter.RunBelt(shooter.beltSpeed);
+        else if (gamepad2.left_bumper)
+            shooter.RunBelt(-shooter.beltSpeed);
+        else
+            shooter.RunBelt(0);
     }
 
     private void Drive(){
@@ -87,11 +89,10 @@ public class TeleMain extends LinearOpMode {
     }
 
     private void Shooting(){
-        isShooting = true;
         shooter.Shoot();
         for (LLResultTypes.FiducialResult res : shooter.GetImage().getFiducialResults()) {
             int id = res.getFiducialId();
-            if (id == 20 || id == 24)
+            if ((id == 20 || id == 24) && !isDriving)
                 PIDAdjusting(res);
         }
     }
@@ -146,9 +147,9 @@ public class TeleMain extends LinearOpMode {
     }
 
     private void SetBrakes(){
-        lb.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rb.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        lf.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rf.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        lb.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        rb.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        lf.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        rf.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
     }
 }
