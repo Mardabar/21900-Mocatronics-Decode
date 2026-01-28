@@ -23,18 +23,18 @@ public class CloseBlueAuto extends OpMode{
     private final Pose startPose = new Pose(27.3, 132.7, Math.toRadians(143));
     private final Pose preScorePose = new Pose(50, 115, Math.toRadians(146));
     private final Pose row1Line = new Pose(48, 84, Math.toRadians(180));
-    private final Pose row1Grab = new Pose(17.5, 84, Math.toRadians(180));
+    private final Pose row1Grab = new Pose(18.5, 84, Math.toRadians(180));
     private final Pose row1Score = new Pose(39.5, 102, Math.toRadians(135));
     private final Pose row2Line = new Pose(48, 60, Math.toRadians(180));
-    private final Pose row2Grab = new Pose(12, 60, Math.toRadians(180));
+    private final Pose row2Grab = new Pose(13, 60, Math.toRadians(180));
     private final Pose row2Score = new Pose(50, 93, Math.toRadians(135)); // was 52, 88.5, 135
     private final Pose row2ScoreCP = new Pose(53, 58);
     private final Pose row3Line = new Pose (48, 36, Math.toRadians(180));
-    private final Pose row3Grab = new Pose (12, 36, Math.toRadians(180));
+    private final Pose row3Grab = new Pose (13, 36, Math.toRadians(180));
 
     /// Row 3 score and park close
-    private final Pose row3ScoreClose = new Pose (48, 107, Math.toRadians(134));
-    private final Pose row3ParkClose = new Pose (55, 63, Math.toRadians(134));
+    private final Pose row3ScoreClose = new Pose (48, 107, Math.toRadians(138));
+    private final Pose row3ParkClose = new Pose (45, 72, Math.toRadians(138));
 
     /// Row 3 score and park far
     private final Pose row3ScoreFar = new Pose (58, 13.5, Math.toRadians(124));
@@ -130,7 +130,7 @@ public class CloseBlueAuto extends OpMode{
             case 3:
                 if (!fol.isBusy()){
                     fol.setMaxPower(.65);
-                    shooter.RunBelt(.4);
+                    shooter.RunBelt(.3);
                     fol.followPath(pathRow1Grab);
                     beltTimer.reset();
                     setPathState(4); // back to 4
@@ -174,7 +174,7 @@ public class CloseBlueAuto extends OpMode{
                 if(!fol.isBusy()){
                     fol.setMaxPower(.65);
                     fol.followPath(pathRow2Grab);
-                    shooter.RunBelt(.4);
+                    shooter.RunBelt(.3);
                     setPathState(8);
                 } break;
 
@@ -210,7 +210,7 @@ public class CloseBlueAuto extends OpMode{
                 if(!fol.isBusy()){
                     fol.followPath(pathRow3Grab);
                     fol.setMaxPower(.65);
-                    shooter.RunBelt(.4);
+                    shooter.RunBelt(.3);
                     beltTimer.reset();
                     setPathState(12);
                 } break;
@@ -350,8 +350,37 @@ public class CloseBlueAuto extends OpMode{
         }
 
         // after that checks if the flywheel is at the velocity or if we have spun for over 3 seconds
-        else if (Math.abs(shooter.shootVel - shooter.flywheel.getVelocity()) < 500 || shootTimer.milliseconds() > 700) {
+        else if (Math.abs(shooter.shootVel - shooter.flywheel.getVelocity()) < 50 || shootTimer.milliseconds() > 700) {
             shooter.RunBelt(0.8);
+
+        }
+
+        // After 4 seconds stop everything and move to the next path state incase sum gets messed up
+        if (shootTimer.milliseconds() > 1900) {
+            shooter.StopMotors();
+            shooter.feeder.setPosition(FeedBackShootSystem.openPos);
+            setPathState(nextState);
+        }
+    }
+
+    private void shootFar(int nextState) {
+        // updates and sets motors to power
+        shooter.Shoot();
+
+        if (shootTimer.milliseconds() > 900) {
+            shooter.feeder.setPosition(FeedBackShootSystem.closePos);
+        } else {
+            shooter.feeder.setPosition(FeedBackShootSystem.openPos);
+        }
+
+        // lets the flywheel spin up for a bit might need to make bigger
+        if (shootTimer.milliseconds() < 500) {
+            shooter.stopBelt();
+        }
+
+        // after that checks if the flywheel is at the velocity or if we have spun for over 3 seconds
+        else if (Math.abs(shooter.shootVel - shooter.flywheel.getVelocity()) < 500 || shootTimer.milliseconds() > 700) {
+            shooter.RunBelt(0.2);
 
         }
 
