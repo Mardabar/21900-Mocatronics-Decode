@@ -199,7 +199,7 @@ public class FeedBackShootSystem {
         angleMap.put(1.5240, 0.150); // was 0.166
         angleMap.put(1.6256, 0.237);
         angleMap.put(2.0574, 0.248);
-        angleMap.put(3.0734, 0.188);
+        angleMap.put(3.0734, 0.19); // 0.188
 
         // 36 in, 0.122
         // 43 in, 0.1320
