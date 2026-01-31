@@ -21,7 +21,7 @@ import org.firstinspires.ftc.teamcode.subsystems.FeedBackShootSystem;
 ///  BLEUAFEHATGSWF why do we have so many teleop modeeasdssdsd
 ///
 @Configurable
-@TeleOp(name = "Tele V2")
+@TeleOp(name = "Tele V2 David")
 public class TeleV2Leif extends OpMode {
 
 

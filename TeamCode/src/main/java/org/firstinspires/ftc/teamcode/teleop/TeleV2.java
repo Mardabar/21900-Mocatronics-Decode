@@ -100,6 +100,7 @@ public class TeleV2 extends OpMode {
                     true // Robot Centric
             );
         } else if (isShooting) {
+            fol.setTeleOpDrive(0, 0, 0, true);
             for (LLResultTypes.FiducialResult res : shooter.GetImage().getFiducialResults()) {
                 int id = res.getFiducialId();
                 if ((id == 20 || id == 24))
